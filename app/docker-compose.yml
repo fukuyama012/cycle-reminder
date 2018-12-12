@@ -1,0 +1,51 @@
+version: '3.7'
+services:
+  web:
+    #build:
+    #  context: web
+    image: fukuyama012/revel-test
+    container_name: web
+    command: revel run -a web
+    tty: true
+    expose:
+      - 9000
+    links:
+      - db
+    #dev
+    volumes:
+      - ./web/:/go/src/web/
+    environment:
+      TZ: Asia/Tokyo
+      VIRTUAL_HOST: ${DOMAIN} # 環境変数で指定する
+    depends_on:
+      - db
+    restart: always
+    logging:
+      options:
+        max-size: 5m
+        max-file: "10"
+
+  db:
+    image: fukuyama012/mysql5.7
+    container_name: db
+    env_file: .env
+    environment:
+      TZ: "Asia/Tokyo"
+    volumes:
+      - ./mysql/data/:/var/lib/mysql
+      - ./mysql/logs/:/var/log/mysql
+      - ./mysql/init/:/docker-entrypoint-initdb.d
+    restart: always
+    logging:
+      options:
+        max-size: 5m
+        max-file: "10"
+    #dev
+    ports:
+      - "3306:3306"
+
+networks:
+  default:
+    external:
+      name: shared
+

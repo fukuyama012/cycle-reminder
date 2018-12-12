@@ -10,3 +10,17 @@
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+
+.DS_Store
+.idea
+
+# app
+.env
+app/web/test-results/
+app/web/tmp/
+app/web/routes/
+app/web/vendor
+
+# mysql
+app/mysql/logs
+app/mysql/data

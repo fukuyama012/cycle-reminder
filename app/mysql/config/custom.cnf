@@ -1,0 +1,26 @@
+[mysql]
+default-character-set=utf8mb4
+
+[mysqld]
+# character
+character-set-server=utf8mb4
+collation-server=utf8mb4_bin
+
+# binlog
+server-id=1
+log_bin=mysql-bin
+binlog-format=ROW
+expire_logs_days=14
+
+# GTID enable
+gtid_mode=ON
+enforce-gtid-consistency
+
+# slow query
+slow_query_log=true
+slow_query_log-file=/var/log/mysql/mysql-slow.sql
+long_query_time=3
+
+[client]
+default-character-set=utf8mb4
+
