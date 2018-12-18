@@ -1,0 +1,10 @@
+version: '3.7'
+services:
+  web:
+    volumes:
+      - ./web/:/go/src/web/
+
+  db:
+    ports:
+      - "3306:3306"
+
