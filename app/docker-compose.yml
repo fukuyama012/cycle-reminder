@@ -14,7 +14,7 @@ services:
     #  - ./web/:/go/src/web/
     environment:
       TZ: Asia/Tokyo
-      VIRTUAL_HOST: ${DOMAIN} # 環境変数で指定する
+      VIRTUAL_HOST: ${DOMAIN} # ホストの環境変数にドメイン名を設定しておく
     depends_on:
       - db
     restart: always
