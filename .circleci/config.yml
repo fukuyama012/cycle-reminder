@@ -31,7 +31,7 @@ jobs:
           ssh-keyscan -p ${HOST_PORT} ${HOST_NAME} >> ~/.ssh/known_hosts
     - run:
         name: transfer docker-compose.yml
-        command: scp -P ${HOST_PORT} docker-compose.yml ${HOST_USER}@{$HOST_NAME}:/home/${HOST_USER}/cycle-reminder/app
+        command: scp -P ${HOST_PORT} docker-compose.yml ${HOST_USER}@${HOST_NAME}:/home/${HOST_USER}/cycle-reminder/app
         working_directory: app
     - run:
         name: new images deploy
