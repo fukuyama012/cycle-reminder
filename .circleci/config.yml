@@ -37,7 +37,7 @@ jobs:
         name: new images deploy
         # DOMAINを他から注入出来ないか？
         command: |
-          ssh -p ${HOST_PORT} ${HOST_USER}@{$HOST_NAME} 'cd ~/cycle-reminder/app; export DOMAIN=${DOMAIN}; docker-compose up --no-deps -d web'
+          ssh -p ${HOST_PORT} ${HOST_USER}@${HOST_NAME} 'cd ~/cycle-reminder/app; export DOMAIN=${DOMAIN}; docker-compose up --no-deps -d web'
 workflows:
   version: 2
   build_and_deploy:
