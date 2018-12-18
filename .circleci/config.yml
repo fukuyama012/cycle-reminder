@@ -34,14 +34,9 @@ jobs:
         command: scp -P ${HOST_PORT} docker-compose.yml ${HOST_USER}@${HOST_NAME}:/home/${HOST_USER}/cycle-reminder/app
         working_directory: app
     - run:
-        name: Set environment variable to .bashrc
-        command: |
-          echo 'export DOMAIN=${DOMAIN}' >> $BASH_ENV
-          source /home/circleci/.bashrc
-    - run:
         name: new images deploy
         command: |
-          ssh -p ${HOST_PORT} ${HOST_USER}@${HOST_NAME} 'cd ~/cycle-reminder/app; docker-compose up --no-deps -d web'
+          ssh -p ${HOST_PORT} ${HOST_USER}@${HOST_NAME} "cd ~/cycle-reminder/app; export DOMAIN=${DOMAIN}; docker-compose up --no-deps -d web"
 workflows:
   version: 2
   build_and_deploy:
