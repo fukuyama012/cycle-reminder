@@ -1,0 +1,51 @@
+version: 2
+jobs:
+  build:
+    machine:
+      image: circleci/classic:edge
+    steps:
+    - checkout
+    - run:
+        name: docker build
+        command: docker build -t ${DOCKER_HUB_USER}/${CYECLE_REMINDER_IMAGE} .
+        working_directory: app/web
+    - run:
+        name: docker login
+        command: docker login -u ${DOCKER_HUB_USER} -p "${DOCKER_HUB_PASSWORD}"
+    - run:
+        name: docker push
+        command: docker push ${DOCKER_HUB_USER}/${CYECLE_REMINDER_IMAGE}:latest
+        working_directory: app/web
+ 
+  deploy-prod:
+    machine:
+      image: circleci/classic:edge
+    steps:
+    - checkout
+    - add_ssh_keys:
+        fingerprints:
+          - "e1:23:4d:45:16:6d:59:17:5c:0b:6f:e4:3f:b6:f3:84"
+    - run:
+        name: Start ssh-keyscan
+        command: |
+          ssh-keyscan -p ${HOST_PORT} ${HOST_NAME} >> ~/.ssh/known_hosts
+    - run:
+        name: transfer docker-compose.yml
+        command: scp -P ${HOST_PORT} docker-compose.yml ${HOST_USER}@{$HOST_NAME}:/home/${HOST_USER}/cycle-reminder/app
+        working_directory: app
+    - run:
+        name: new images deploy
+        # DOMAINを他から注入出来ないか？
+        command: |
+          ssh -p ${HOST_PORT} ${HOST_USER}@{$HOST_NAME} 'cd ~/cycle-reminder/app; export DOMAIN=${DOMAIN}; docker-compose up --no-deps -d web'
+workflows:
+  version: 2
+  build_and_deploy:
+    jobs:
+    #- build
+    - deploy-prod:
+        requires:
+        - build
+        filters:
+          branches:
+            only: master

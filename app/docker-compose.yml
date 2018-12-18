@@ -1,8 +1,6 @@
 version: '3.7'
 services:
   web:
-    #build:
-    #  context: web
     image: fukuyama012/revel-test
     container_name: web
     command: revel run -a web
@@ -12,8 +10,8 @@ services:
     links:
       - db
     #dev
-    volumes:
-      - ./web/:/go/src/web/
+    #volumes:
+    #  - ./web/:/go/src/web/
     environment:
       TZ: Asia/Tokyo
       VIRTUAL_HOST: ${DOMAIN} # 環境変数で指定する
