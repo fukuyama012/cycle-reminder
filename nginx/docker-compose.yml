@@ -9,6 +9,8 @@ services:
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
       #- ./certs:/etc/nginx/certs:ro
+    environment:
+      TZ: "Asia/Tokyo"
     restart: always
     logging:
       options:
