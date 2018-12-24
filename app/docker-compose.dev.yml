@@ -1,6 +1,7 @@
 version: '3.7'
 services:
   web:
+    command: revel run -a web
     volumes:
       - ./web/:/go/src/web/
 

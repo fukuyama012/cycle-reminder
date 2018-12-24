@@ -3,7 +3,7 @@ services:
   web:
     image: fukuyama012/revel-test
     container_name: web
-    command: revel run -a web
+    command: revel run -a web prod
     expose:
       - 9000
     links:
