@@ -3,6 +3,7 @@ services:
   web:
     image: fukuyama012/revel-test
     container_name: web
+    env_file: .env
     command: revel run -a github.com/fukuyama012/cycle-reminder/service/web prod
     expose:
       - 9000
