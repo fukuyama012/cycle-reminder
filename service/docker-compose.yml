@@ -3,7 +3,7 @@ services:
   web:
     image: fukuyama012/revel-test
     container_name: web
-    command: revel run -a web prod
+    command: revel run -a github.com/fukuyama012/service/web prod
     expose:
       - 9000
     links:

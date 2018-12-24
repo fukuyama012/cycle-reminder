@@ -7,12 +7,12 @@ package run
 import (
 	"reflect"
 	"github.com/revel/revel"
-	controllers "github.com/revel/modules/static/app/controllers"
+	_ "github.com/fukuyama012/service/web/app"
+	controllers "github.com/fukuyama012/service/web/app/controllers"
+	tests "github.com/fukuyama012/service/web/tests"
+	controllers0 "github.com/revel/modules/static/app/controllers"
 	_ "github.com/revel/modules/testrunner/app"
-	controllers0 "github.com/revel/modules/testrunner/app/controllers"
-	_ "web/app"
-	controllers1 "web/app/controllers"
-	tests "web/tests"
+	controllers1 "github.com/revel/modules/testrunner/app/controllers"
 	"github.com/revel/revel/testing"
 )
 
@@ -31,7 +31,21 @@ func Run(port int) {
 func Register() {
 	revel.AppLog.Info("Running revel server")
 	
-	revel.RegisterController((*controllers.Static)(nil),
+	revel.RegisterController((*controllers.App)(nil),
+		[]*revel.MethodType{
+			&revel.MethodType{
+				Name: "Index",
+				Args: []*revel.MethodArg{ 
+				},
+				RenderArgNames: map[int][]string{ 
+					12: []string{ 
+					},
+				},
+			},
+			
+		})
+	
+	revel.RegisterController((*controllers0.Static)(nil),
 		[]*revel.MethodType{
 			&revel.MethodType{
 				Name: "Serve",
@@ -74,7 +88,7 @@ func Register() {
 			
 		})
 	
-	revel.RegisterController((*controllers0.TestRunner)(nil),
+	revel.RegisterController((*controllers1.TestRunner)(nil),
 		[]*revel.MethodType{
 			&revel.MethodType{
 				Name: "Index",
@@ -110,20 +124,6 @@ func Register() {
 				Args: []*revel.MethodArg{ 
 				},
 				RenderArgNames: map[int][]string{ 
-				},
-			},
-			
-		})
-	
-	revel.RegisterController((*controllers1.App)(nil),
-		[]*revel.MethodType{
-			&revel.MethodType{
-				Name: "Index",
-				Args: []*revel.MethodArg{ 
-				},
-				RenderArgNames: map[int][]string{ 
-					12: []string{ 
-					},
 				},
 			},
 			

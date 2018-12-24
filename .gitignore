@@ -16,11 +16,11 @@
 
 # app
 .env
-app/web/test-results/
-app/web/tmp/
-app/web/routes/
-app/web/vendor
+service/web/test-results/
+service/web/tmp/
+service/web/routes/
+service/web/vendor
 
 # mysql
-app/mysql/logs
-app/mysql/data
+service/mysql/logs
+service/mysql/data

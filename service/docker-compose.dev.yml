@@ -1,0 +1,11 @@
+version: '3.7'
+services:
+  web:
+    command: revel run -a github.com/fukuyama012/service/web
+    volumes:
+      - ./web/:/go/src/github.com/fukuyama012/service/web/
+
+  db:
+    ports:
+      - "3306:3306"
+
