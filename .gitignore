@@ -20,6 +20,7 @@ service/web/test-results/
 service/web/tmp/
 service/web/routes/
 service/web/vendor
+service/web/log
 
 # mysql
 service/mysql/logs

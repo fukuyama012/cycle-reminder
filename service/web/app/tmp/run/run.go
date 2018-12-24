@@ -7,9 +7,9 @@ package run
 import (
 	"reflect"
 	"github.com/revel/revel"
-	_ "github.com/fukuyama012/service/web/app"
-	controllers "github.com/fukuyama012/service/web/app/controllers"
-	tests "github.com/fukuyama012/service/web/tests"
+	_ "github.com/fukuyama012/cycle-reminder/service/web/app"
+	controllers "github.com/fukuyama012/cycle-reminder/service/web/app/controllers"
+	tests "github.com/fukuyama012/cycle-reminder/service/web/tests"
 	controllers0 "github.com/revel/modules/static/app/controllers"
 	_ "github.com/revel/modules/testrunner/app"
 	controllers1 "github.com/revel/modules/testrunner/app/controllers"

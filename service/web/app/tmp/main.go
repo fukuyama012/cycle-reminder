@@ -6,7 +6,7 @@ package main
 
 import (
 	"flag"
-	"github.com/fukuyama012/service/web/app/tmp/run"
+	"github.com/fukuyama012/cycle-reminder/service/web/app/tmp/run"
 	"github.com/revel/revel"
 )
 
