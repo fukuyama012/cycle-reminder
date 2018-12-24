@@ -7,14 +7,14 @@ jobs:
     - checkout
     - run:
         name: docker build
-        command: docker build -t ${DOCKER_HUB_USER}/${CYECLE_REMINDER_IMAGE} .
+        command: docker build -t ${DOCKER_HUB_USER}/${DOCKER_HUB_IMAGE} .
         working_directory: service/web
     - run:
         name: docker login
         command: docker login -u ${DOCKER_HUB_USER} -p "${DOCKER_HUB_PASSWORD}"
     - run:
         name: docker push
-        command: docker push ${DOCKER_HUB_USER}/${CYECLE_REMINDER_IMAGE}:latest
+        command: docker push ${DOCKER_HUB_USER}/${DOCKER_HUB_IMAGE}:latest
         working_directory: service/web
  
   deploy-prod:

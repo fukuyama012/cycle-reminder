@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   web:
-    image: fukuyama012/revel-test
+    image: fukuyama012/cycle-reminder
     container_name: web
     env_file: .env
     command: revel run -a github.com/fukuyama012/cycle-reminder/service/web prod
