@@ -3,6 +3,9 @@ jobs:
   build:
     machine:
       image: circleci/classic:edge
+    filters:
+      branches:
+        only: master
     steps:
     - checkout
     - run:
@@ -16,7 +19,7 @@ jobs:
         name: docker push
         command: docker push ${DOCKER_HUB_USER}/${DOCKER_HUB_IMAGE}:latest
         working_directory: service/web
- 
+
   deploy-prod:
     machine:
       image: circleci/classic:edge
@@ -41,6 +44,7 @@ jobs:
         name: clean up unnecessary images
         command: |
           ssh -p ${HOST_PORT} ${HOST_USER}@${HOST_NAME} 'docker rmi $(docker images -f dangling=true -q)'
+
 workflows:
   version: 2
   build_and_deploy:
