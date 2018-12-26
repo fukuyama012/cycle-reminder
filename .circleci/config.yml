@@ -3,9 +3,6 @@ jobs:
   build:
     machine:
       image: circleci/classic:edge
-    filters:
-      branches:
-        only: master
     steps:
     - checkout
     - run:
@@ -17,7 +14,10 @@ jobs:
         command: docker login -u ${DOCKER_HUB_USER} -p "${DOCKER_HUB_PASSWORD}"
     - run:
         name: docker push
-        command: docker push ${DOCKER_HUB_USER}/${DOCKER_HUB_IMAGE}:latest
+        command: |
+          if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              docker push ${DOCKER_HUB_USER}/${DOCKER_HUB_IMAGE}:latest
+          fi
         working_directory: service/web
 
   deploy-prod:
