@@ -1,7 +1,7 @@
 package app
 
 import (
-	"github.com/fukuyama012/cycle-reminder/service/web/app/controllers"
+	"github.com/fukuyama012/cycle-reminder/service/web/app/models"
 	"github.com/revel/revel"
 )
 
@@ -37,7 +37,7 @@ func init() {
 	// revel.OnAppStart(ExampleStartupScript)
 	// revel.OnAppStart(InitDB)
 	// revel.OnAppStart(FillCache)
-	revel.OnAppStart(controllers.InitDB)
+	revel.OnAppStart(models.InitDB)
 }
 
 // HeaderFilter adds common security headers

@@ -1,9 +1,7 @@
-package controllers
+package models
 
 import (
-	"github.com/fukuyama012/cycle-reminder/service/web/app/models"
 	"github.com/go-sql-driver/mysql"
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	"log"
 	"os"
@@ -29,6 +27,6 @@ func InitDB()  {
 	}
 
 	db.DB()
-	db.AutoMigrate(&models.User{})
+	db.AutoMigrate(User{})
 	DB = db
 }
