@@ -7,8 +7,6 @@ services:
     command: revel run -a github.com/fukuyama012/cycle-reminder/service/web prod
     expose:
       - 9000
-    links:
-      - db
     environment:
       TZ: Asia/Tokyo
       VIRTUAL_HOST: ${DOMAIN} # ホストの環境変数にドメイン名を設定しておく
