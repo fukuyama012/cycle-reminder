@@ -36,3 +36,11 @@
 [[constraint]]
   name = "github.com/revel/modules"
   version = "0.21.0"
+
+[[constraint]]
+  name = "github.com/jinzhu/gorm"
+  version = "1.9.2"
+
+[[constraint]]
+  name = "github.com/go-sql-driver/mysql"
+  version = "1.4.1"

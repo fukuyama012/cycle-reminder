@@ -14,9 +14,12 @@ jobs:
         command: docker login -u ${DOCKER_HUB_USER} -p "${DOCKER_HUB_PASSWORD}"
     - run:
         name: docker push
-        command: docker push ${DOCKER_HUB_USER}/${DOCKER_HUB_IMAGE}:latest
+        command: |
+          if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              docker push ${DOCKER_HUB_USER}/${DOCKER_HUB_IMAGE}:latest
+          fi
         working_directory: service/web
- 
+
   deploy-prod:
     machine:
       image: circleci/classic:edge
@@ -41,6 +44,7 @@ jobs:
         name: clean up unnecessary images
         command: |
           ssh -p ${HOST_PORT} ${HOST_USER}@${HOST_NAME} 'docker rmi $(docker images -f dangling=true -q)'
+
 workflows:
   version: 2
   build_and_deploy:
