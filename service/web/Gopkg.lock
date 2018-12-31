@@ -189,6 +189,22 @@
   pruneopts = "T"
   revision = "9b43fcefddd0178abdabf4d484ab0d695d0011db"
 
+[[projects]]
+  digest = "1:c470b87f876862a9893c26b32eb9d6e5e0216aec1f7a2189a1f32cd7adebaed8"
+  name = "gopkg.in/testfixtures.v2"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "1e85b764c9e0953c7b9ac81115554d6d2ec04aac"
+  version = "v2.5.3"
+
+[[projects]]
+  digest = "1:4d2e5a73dc1500038e504a8d78b986630e3626dc027bc030ba5c75da257cdb96"
+  name = "gopkg.in/yaml.v2"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "51d6538a90f86fe93ac480b35f37b2be17fef232"
+  version = "v2.2.2"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
@@ -201,6 +217,7 @@
     "github.com/revel/revel",
     "github.com/revel/revel/testing",
     "github.com/stretchr/testify/assert",
+    "gopkg.in/testfixtures.v2",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

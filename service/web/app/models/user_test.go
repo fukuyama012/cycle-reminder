@@ -8,6 +8,7 @@ import (
 )
 
 func TestUser_GetById(t *testing.T) {
+	prepareTestDB()
 	tests := []struct {
 		in  uint
 		out string
@@ -26,6 +27,7 @@ func TestUser_GetById(t *testing.T) {
 	}
 
 func TestUser_GetByIdNotFound(t *testing.T)  {
+	prepareTestDB()
 	var assertT = assert.New(t)
 	tests := []struct {
 		in  uint
@@ -41,10 +43,10 @@ func TestUser_GetByIdNotFound(t *testing.T)  {
 }
 
 func TestUser_GetAll(t *testing.T) {
+	prepareTestDB()
 	users, err := models.GetAllUsers()
 	if err != nil {
 		t.Error(err)
 	}
 	assert.Equal(t, 2, len(users))
 }
-
