@@ -26,6 +26,10 @@ jobs:
           name: make network
           command: bash make-network.sh
       - run:
+          name: nginx up
+          command: docker-compose up -d
+          working_directory: nginx
+      - run:
           name: service up
           command: export DOMAIN=${DOMAIN} && docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
           working_directory: service
