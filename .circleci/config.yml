@@ -43,7 +43,7 @@ jobs:
               jwilder/dockerize -wait tcp://db:3306 -timeout 90s -wait-retry-interval 3s 
       - run:
           name: go test
-          command: docker-compose exec web go test ./... -v | tee go-test.out
+          command: docker-compose exec web go test ./... -v
           working_directory: service
       - run:
           name: generate test report
