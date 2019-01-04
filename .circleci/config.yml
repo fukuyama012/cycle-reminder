@@ -43,7 +43,7 @@ jobs:
           command: docker network inspect shared
       - run:
           name: go test
-          command: docker-compose run web go test ./...
+          command: docker-compose -f docker-compose.yml -f docker-compose.dev.yml run web go test ./...
           working_directory: service/web/app
 
   deploy-prod:
