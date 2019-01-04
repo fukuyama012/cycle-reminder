@@ -20,8 +20,6 @@ jobs:
   test:
     machine:
       image: circleci/classic:edge
-    environment:
-      TEST_RESULTS: /service/report.xml
     steps:
       - checkout
       - run:
@@ -45,12 +43,14 @@ jobs:
               jwilder/dockerize -wait tcp://db:3306 -timeout 90s -wait-retry-interval 3s 
       - run:
           name: go test
-          command: |
-            docker-compose exec web go test ./... -v | tee go-test.out
-            go-junit-report < go-test.out > report.xml
+          command: docker-compose exec web go test ./... -v | tee go-test.out
+          working_directory: service
+      - run:
+          name: generate test report
+          command: go-junit-report < go-test.out > report.xml
           working_directory: service
       - store_artifacts:
-          path: ${TEST_RESULTS}
+          path: /service/report.xml
           destination: report.xml
 
   deploy-prod:
