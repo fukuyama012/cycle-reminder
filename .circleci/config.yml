@@ -44,7 +44,7 @@ jobs:
       - run:
           name: go test
           command: docker-compose -f docker-compose.yml -f docker-compose.dev.yml run web go test ./...
-          working_directory: service/web/app
+          working_directory: service
 
   deploy-prod:
     machine:
