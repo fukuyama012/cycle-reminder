@@ -14,11 +14,33 @@ jobs:
         command: docker login -u ${DOCKER_HUB_USER} -p "${DOCKER_HUB_PASSWORD}"
     - run:
         name: docker push
-        command: |
-          if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              docker push ${DOCKER_HUB_USER}/${DOCKER_HUB_IMAGE}:latest
-          fi
+        command: docker push ${DOCKER_HUB_USER}/${DOCKER_HUB_IMAGE}:latest
         working_directory: service/web
+
+  test:
+    machine:
+      image: circleci/classic:edge
+    steps:
+      - checkout
+      - run:
+          name: make network
+          command: bash make-network.sh
+      - run:
+          name: service up
+          command: export DOMAIN=${DOMAIN} && docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+          working_directory: service
+      - run:
+          name: Wait until the db container fully set up
+          command: |
+            docker run --network shared \
+              jwilder/dockerize -wait tcp://db:3306 -timeout 90s -wait-retry-interval 3s 
+      - run:
+          name: check network
+          command: docker network inspect shared
+      - run:
+          name: go test
+          command: docker-compose run web go test ./...
+          working_directory: service/web/app
 
   deploy-prod:
     machine:
@@ -50,9 +72,12 @@ workflows:
   build_and_deploy:
     jobs:
     - build
-    - deploy-prod:
+    - test:
         requires:
         - build
+    - deploy-prod:
+        requires:
+        - test
         filters:
           branches:
             only: master
