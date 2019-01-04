@@ -20,6 +20,8 @@ jobs:
   test:
     machine:
       image: circleci/classic:edge
+    environment:
+      TEST_RESULTS: /service/report.xml
     steps:
       - checkout
       - run:
@@ -34,14 +36,22 @@ jobs:
           command: export DOMAIN=${DOMAIN} && docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
           working_directory: service
       - run:
+          name: Install JUnit
+          command: go get github.com/jstemmer/go-junit-report
+      - run:
           name: Wait until the db container fully set up
           command: |
             docker run --network shared \
               jwilder/dockerize -wait tcp://db:3306 -timeout 90s -wait-retry-interval 3s 
       - run:
           name: go test
-          command: docker-compose exec web go test ./...
+          command: -
+            docker-compose exec web go test ./... -v | tee go-test.out
+            go-junit-report < go-test.out > report.xml
           working_directory: service
+      - store_artifacts:
+          path: ${TEST_RESULTS}
+          destination: report.xml
 
   deploy-prod:
     machine:
