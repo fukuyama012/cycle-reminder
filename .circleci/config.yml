@@ -39,11 +39,8 @@ jobs:
             docker run --network shared \
               jwilder/dockerize -wait tcp://db:3306 -timeout 90s -wait-retry-interval 3s 
       - run:
-          name: check network
-          command: docker network inspect shared
-      - run:
           name: go test
-          command: docker-compose -f docker-compose.yml -f docker-compose.dev.yml run web go test ./...
+          command: docker-compose exec web go test ./...
           working_directory: service
 
   deploy-prod:
