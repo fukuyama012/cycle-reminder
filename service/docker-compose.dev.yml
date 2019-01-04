@@ -2,8 +2,6 @@ version: '3.3'
 services:
   web:
     command: revel run -a github.com/fukuyama012/cycle-reminder/service/web
-    env_file:
-      - .env.sample
     environment:
       MYSQL_ROOT_PASSWORD: pass_root
       MYSQL_USER: dev
@@ -16,8 +14,6 @@ services:
       - ./web/:/go/src/github.com/fukuyama012/cycle-reminder/service/web/
 
   db:
-    env_file:
-      - .env.sample
     environment:
       MYSQL_ROOT_PASSWORD: pass_root
       MYSQL_USER: dev
