@@ -50,7 +50,7 @@ jobs:
           command: go-junit-report < go-test.out > report.xml
           working_directory: service
       - store_artifacts:
-          path: /service/report.xml
+          path: service/report.xml
           destination: report.xml
 
   deploy-prod:
