@@ -1,41 +1,31 @@
 version: '3.3'
 services:
   web:
-    image: fukuyama012/cycle-reminder
+    build:
+      context: web
     container_name: web
-    env_file: .env
-    command: revel run -a github.com/fukuyama012/cycle-reminder/service/web prod
+    command: revel run -a github.com/fukuyama012/cycle-reminder/service/web
     expose:
       - 9000
+    env_file: .env.test
     environment:
       TZ: Asia/Tokyo
       VIRTUAL_HOST: ${DOMAIN} # ホストの環境変数にドメイン名を設定しておく
     depends_on:
       - db
     restart: always
-    logging:
-      options:
-        max-size: 5m
-        max-file: "10"
 
   db:
     image: fukuyama012/mysql5.7
     container_name: db
-    env_file: .env
+    env_file: .env.test
     environment:
       TZ: "Asia/Tokyo"
     volumes:
-      - ./mysql/data/:/var/lib/mysql
-      - ./mysql/logs/:/var/log/mysql
       - ./mysql/init/:/docker-entrypoint-initdb.d
     restart: always
-    logging:
-      options:
-        max-size: 5m
-        max-file: "10"
 
 networks:
   default:
     external:
       name: shared
-

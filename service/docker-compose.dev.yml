@@ -2,23 +2,10 @@ version: '3.3'
 services:
   web:
     command: revel run -a github.com/fukuyama012/cycle-reminder/service/web
-    environment:
-      MYSQL_ROOT_PASSWORD: pass_root
-      MYSQL_USER: dev
-      MYSQL_PASSWORD: pass_dev
-      MYSQL_DATABASE: cycle_reminder
-      MYSQL_ADDRESS: 172.18.0.3
-      MYSQL_PORT: 3306
-      APP_SECRET: app_secret
-    #volumes:
-    #  - ./web/:/go/src/github.com/fukuyama012/cycle-reminder/service/web/
+    volumes:
+      - ./web/:/go/src/github.com/fukuyama012/cycle-reminder/service/web/
 
   db:
-    environment:
-      MYSQL_ROOT_PASSWORD: pass_root
-      MYSQL_USER: dev
-      MYSQL_PASSWORD: pass_dev
-      MYSQL_DATABASE: cycle_reminder
     ports:
       - "3306:3306"
 
