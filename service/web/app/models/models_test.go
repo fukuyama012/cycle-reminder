@@ -50,7 +50,7 @@ func prepareFixtures()  {
 	if err != nil {
 		log.Fatal(err)
 	}
-	testfixtures.SkipDatabaseNameCheck(true)
+	//testfixtures.SkipDatabaseNameCheck(true)
 	fixtures = fixtures_
 }
 
