@@ -1,8 +1,7 @@
 version: '3.3'
 services:
   web:
-    build:
-      context: web
+    image: fukuyama012/cycle-reminder
     container_name: web
     command: revel run -a github.com/fukuyama012/cycle-reminder/service/web
     expose:
