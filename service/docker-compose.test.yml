@@ -3,7 +3,7 @@ services:
   web:
     image: fukuyama012/cycle-reminder
     container_name: web
-    command: revel run -a github.com/fukuyama012/cycle-reminder/service/web
+    command: revel run -a github.com/fukuyama012/cycle-reminder/service/web prod
     expose:
       - 9000
     env_file: .env.test
@@ -20,8 +20,6 @@ services:
     env_file: .env.test
     environment:
       TZ: "Asia/Tokyo"
-    volumes:
-      - ./mysql/init/:/docker-entrypoint-initdb.d
     restart: always
 
 networks:
