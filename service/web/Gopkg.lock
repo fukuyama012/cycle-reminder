@@ -2,6 +2,14 @@
 
 
 [[projects]]
+  digest = "1:9f42202ac457c462ad8bb9642806d275af9ab4850cf0b1960b9c6f083d4a309a"
+  name = "github.com/davecgh/go-spew"
+  packages = ["spew"]
+  pruneopts = "T"
+  revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
+  version = "v1.1.1"
+
+[[projects]]
   digest = "1:92d9d8d25bbab74ef8a3c546c121e24542ac984ccdc4f99678e06042a45e71f8"
   name = "github.com/go-sql-driver/mysql"
   packages = ["."]
@@ -48,6 +56,14 @@
   pruneopts = "T"
   revision = "6ca4dbf54d38eea1a992b3c722a76a5d1c4cb25c"
   version = "v0.0.4"
+
+[[projects]]
+  digest = "1:22aa691fe0213cb5c07d103f9effebcb7ad04bee45a0ce5fe5369d0ca2ec3a1f"
+  name = "github.com/pmezard/go-difflib"
+  packages = ["difflib"]
+  pruneopts = "T"
+  revision = "792786c7400a136282c1664665ae0a8db921c6c2"
+  version = "v1.0.0"
 
 [[projects]]
   digest = "1:b966ac707f293c58ebff5689d7c240199044c5728d3df818ded0139b3256fbd5"
@@ -100,6 +116,14 @@
   pruneopts = "T"
   revision = "a3d7a7c23ca885cc5036d3641ede49ce4a14ee2e"
   version = "v0.21.0"
+
+[[projects]]
+  digest = "1:e95496462101745805bd4e041a5b841e108c7cf761264d53648246308de2761e"
+  name = "github.com/stretchr/testify"
+  packages = ["assert"]
+  pruneopts = "T"
+  revision = "f35b8ab0b5a2cef36673838d662e249dd9c94686"
+  version = "v1.2.2"
 
 [[projects]]
   digest = "1:4107932fdca2811de89ba03c6d1e21e7563ca6825fab0b407302a8def138871d"
@@ -165,6 +189,22 @@
   pruneopts = "T"
   revision = "9b43fcefddd0178abdabf4d484ab0d695d0011db"
 
+[[projects]]
+  digest = "1:c470b87f876862a9893c26b32eb9d6e5e0216aec1f7a2189a1f32cd7adebaed8"
+  name = "gopkg.in/testfixtures.v2"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "1e85b764c9e0953c7b9ac81115554d6d2ec04aac"
+  version = "v2.5.3"
+
+[[projects]]
+  digest = "1:4d2e5a73dc1500038e504a8d78b986630e3626dc027bc030ba5c75da257cdb96"
+  name = "gopkg.in/yaml.v2"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "51d6538a90f86fe93ac480b35f37b2be17fef232"
+  version = "v2.2.2"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
@@ -176,6 +216,8 @@
     "github.com/revel/modules/testrunner/app/controllers",
     "github.com/revel/revel",
     "github.com/revel/revel/testing",
+    "github.com/stretchr/testify/assert",
+    "gopkg.in/testfixtures.v2",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -10,7 +10,6 @@ import (
 var DB *gorm.DB
 
 func InitDB()  {
-
 	c := mysql.Config{
 		DBName:               os.Getenv("MYSQL_DATABASE"),
 		User:                 os.Getenv("MYSQL_USER"),
@@ -29,4 +28,10 @@ func InitDB()  {
 	db.DB()
 	db.AutoMigrate(User{})
 	DB = db
+}
+
+func CloseDB()  {
+	if err := DB.Close(); err != nil {
+		log.Panicf("Failed gorm.Close %v\n", err)
+	}
 }
