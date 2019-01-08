@@ -10,29 +10,29 @@ type Login struct {
 }
 
 // TOPページ　セッション有ればアプリへ 無ければLPへ
-func (c Login) Index()  {
-
+func (c Login) Index() revel.Result {
+	return c.Render()
 }
 
 // oauth認証する
-func (c Login) Oauth() {
+func (c Login) Oauth() revel.Result {
 	state := services.RandString(10)
 	
 	session := services.Session{}
 	session.SetForCallBackCheck(state)
 	
 	url := services.GetAuthCodeUrlWithSessionState(state)
-	c.Redirect(url)
+	return c.Redirect(url)
 }
 
 // GoogleからのCallback処理 成功時セッション保存しアプリへ
-func (c Login) Callback()  {
-	
+func (c Login) Callback() revel.Result {
+	return c.Render()
 }
 
 // ログアウト処理　セッション削除
-func (c Login) Logout()  {
-
+func (c Login) Logout() revel.Result {
+	return c.Render()
 }
 
 

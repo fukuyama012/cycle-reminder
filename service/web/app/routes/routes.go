@@ -18,6 +18,39 @@ func (_ tApp) Index(
 }
 
 
+type tLogin struct {}
+var Login tLogin
+
+
+func (_ tLogin) Index(
+		) string {
+	args := make(map[string]string)
+	
+	return revel.MainRouter.Reverse("Login.Index", args).URL
+}
+
+func (_ tLogin) Oauth(
+		) string {
+	args := make(map[string]string)
+	
+	return revel.MainRouter.Reverse("Login.Oauth", args).URL
+}
+
+func (_ tLogin) Callback(
+		) string {
+	args := make(map[string]string)
+	
+	return revel.MainRouter.Reverse("Login.Callback", args).URL
+}
+
+func (_ tLogin) Logout(
+		) string {
+	args := make(map[string]string)
+	
+	return revel.MainRouter.Reverse("Login.Logout", args).URL
+}
+
+
 type tStatic struct {}
 var Static tStatic
 

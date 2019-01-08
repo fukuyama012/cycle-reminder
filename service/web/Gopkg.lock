@@ -18,6 +18,14 @@
   version = "v1.4.1"
 
 [[projects]]
+  digest = "1:a2ecb56e5053d942aafc86738915fb94c9131bac848c543b8b6764365fd69080"
+  name = "github.com/golang/protobuf"
+  packages = ["proto"]
+  pruneopts = "T"
+  revision = "aa810b61a9c79d51363740d207bb46cf8e620ed5"
+  version = "v1.2.0"
+
+[[projects]]
   digest = "1:55d1a44ee5e75217224af913201bb5fdb0afe4769fc4853f32a35572c199cf29"
   name = "github.com/inconshreveable/log15"
   packages = ["term"]
@@ -145,9 +153,24 @@
   branch = "master"
   digest = "1:134fd2b5998199ca103bdcd2920be488fffbbf307fec71d158b773694a8a2080"
   name = "golang.org/x/net"
-  packages = ["websocket"]
+  packages = [
+    "context",
+    "context/ctxhttp",
+    "websocket",
+  ]
   pruneopts = "T"
   revision = "610586996380ceef02dd726cc09df7e00a3f8e56"
+
+[[projects]]
+  branch = "master"
+  digest = "1:320e5ba9ea8000060bec710764b8b26c251ee28f6012422b669cb8cb100c9815"
+  name = "golang.org/x/oauth2"
+  packages = [
+    ".",
+    "internal",
+  ]
+  pruneopts = "T"
+  revision = "d668ce993890a79bda886613ee587a69dd5da7a6"
 
 [[projects]]
   branch = "master"
@@ -160,7 +183,16 @@
 [[projects]]
   digest = "1:1469235a5a8e192cfe6a99c4804b883a02f0ff96a693cd1660515a3a3b94d5ac"
   name = "google.golang.org/appengine"
-  packages = ["cloudsql"]
+  packages = [
+    "cloudsql",
+    "internal",
+    "internal/base",
+    "internal/datastore",
+    "internal/log",
+    "internal/remote_api",
+    "internal/urlfetch",
+    "urlfetch",
+  ]
   pruneopts = "T"
   revision = "e9657d882bb81064595ca3b56cbe2546bbabf7b1"
   version = "v1.4.0"
@@ -217,6 +249,7 @@
     "github.com/revel/revel",
     "github.com/revel/revel/testing",
     "github.com/stretchr/testify/assert",
+    "golang.org/x/oauth2",
     "gopkg.in/testfixtures.v2",
   ]
   solver-name = "gps-cdcl"
