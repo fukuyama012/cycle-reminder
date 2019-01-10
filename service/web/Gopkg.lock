@@ -181,6 +181,19 @@
   revision = "b05ddf57801d2239d6ab0ee35f9d981e0420f4ac"
 
 [[projects]]
+  digest = "1:2aa09cbc32ca3e699753b1270176ff10bf6752326510e18878d2cb25a5274f4f"
+  name = "google.golang.org/api"
+  packages = [
+    "gensupport",
+    "googleapi",
+    "googleapi/internal/uritemplates",
+    "oauth2/v2",
+  ]
+  pruneopts = "T"
+  revision = "19e022d8cf43ce81f046bae8cc18c5397cc7732f"
+  version = "v0.1.0"
+
+[[projects]]
   digest = "1:1469235a5a8e192cfe6a99c4804b883a02f0ff96a693cd1660515a3a3b94d5ac"
   name = "google.golang.org/appengine"
   packages = [
@@ -250,6 +263,7 @@
     "github.com/revel/revel/testing",
     "github.com/stretchr/testify/assert",
     "golang.org/x/oauth2",
+    "google.golang.org/api/oauth2/v2",
     "gopkg.in/testfixtures.v2",
   ]
   solver-name = "gps-cdcl"

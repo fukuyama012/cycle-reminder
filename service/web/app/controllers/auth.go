@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/fukuyama012/cycle-reminder/service/web/app/routes"
 	"github.com/fukuyama012/cycle-reminder/service/web/app/services"
 	"github.com/revel/revel"
 )
@@ -27,7 +28,44 @@ func (c Auth) Oauth() revel.Result {
 
 // GoogleからのCallback処理 成功時セッション保存しアプリへ
 func (c Auth) Callback() revel.Result {
-	return c.Render()
+	if !c.isValidCallbackSession() {
+		return c.Redirect(routes.App.Index())
+	}
+
+	code := c.Params.Query.Get("code");
+	if code == "" {
+		c.Log.Error("not exists Callback Code")
+		return c.Redirect(routes.App.Index())
+	}
+
+	oauthInfo, err := services.GetOauthInfo(code)
+	if err != nil {
+		c.Log.Errorf("%v", err)
+		return c.Redirect(routes.App.Index())
+	}
+
+	//revel.AppLog.Infof("oauthinfo %v", oauthInfo)
+	email := oauthInfo.Email
+	return c.Render(email)
+}
+
+// セッションを通じて正当なリクエストかチェック
+func (c Auth) isValidCallbackSession() bool  {
+	state := c.Params.Query.Get("state");
+	if state == "" {
+		c.Log.Error("not exists Callback Session")
+		return false
+	}
+	oauthSession, ok := c.Session[googleOauthSession];
+	if !ok {
+		c.Log.Error("not exists Oauth Session")
+		return false
+	}
+	if oauthSession.(string) != state {
+		c.Log.Error("invalid Callback Session")
+		return false
+	}
+	return true
 }
 
 // ログアウト処理　セッション削除
