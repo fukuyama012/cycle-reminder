@@ -10,9 +10,9 @@ const (
 	tokenEndpoint     = "https://www.googleapis.com/oauth2/v4/token"
 )
 
-func GetAuthCodeUrlWithSessionState(state string) string {
+func GetAuthCodeUrlWithSessionKey(key string) string {
 	oauth := getConnectConfig()
-	return oauth.AuthCodeURL(state)
+	return oauth.AuthCodeURL(key)
 }
 
 // GetConnect 接続を取得する

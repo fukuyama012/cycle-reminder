@@ -5,33 +5,33 @@ import (
 	"github.com/revel/revel"
 )
 
-type Login struct {
+const googleOauthSession = "google_oauth_session"
+
+type Auth struct {
 	*revel.Controller
 }
 
 // TOPページ　セッション有ればアプリへ 無ければLPへ
-func (c Login) Index() revel.Result {
+func (c Auth) Index() revel.Result {
 	return c.Render()
 }
 
 // oauth認証する
-func (c Login) Oauth() revel.Result {
-	state := services.RandString(10)
-	
-	session := services.Session{}
-	session.SetForCallBackCheck(state)
-	
-	url := services.GetAuthCodeUrlWithSessionState(state)
+func (c Auth) Oauth() revel.Result {
+	key := services.RandString(10)
+
+	c.Session[googleOauthSession] = key
+	url := services.GetAuthCodeUrlWithSessionKey(key)
 	return c.Redirect(url)
 }
 
 // GoogleからのCallback処理 成功時セッション保存しアプリへ
-func (c Login) Callback() revel.Result {
+func (c Auth) Callback() revel.Result {
 	return c.Render()
 }
 
 // ログアウト処理　セッション削除
-func (c Login) Logout() revel.Result {
+func (c Auth) Logout() revel.Result {
 	return c.Render()
 }
 

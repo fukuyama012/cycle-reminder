@@ -45,14 +45,14 @@ func Register() {
 			
 		})
 	
-	revel.RegisterController((*controllers.Login)(nil),
+	revel.RegisterController((*controllers.Auth)(nil),
 		[]*revel.MethodType{
 			&revel.MethodType{
 				Name: "Index",
 				Args: []*revel.MethodArg{ 
 				},
 				RenderArgNames: map[int][]string{ 
-					14: []string{ 
+					16: []string{ 
 					},
 				},
 			},

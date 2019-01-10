@@ -7,10 +7,10 @@ module:testrunner
 # module:jobs
 
 
-GET     /                                       Login.Index
-GET     /login                                  Login.Oauth
-GET     /logout                                 Login.Logout
-GET     /login/callback                         Login.Callback
+GET     /                                       Auth.Index
+GET     /login                                  Auth.Oauth
+GET     /logout                                 Auth.Logout
+GET     /login/callback                         Auth.Callback
 
 #GET     /lp                                    App.Index
 
