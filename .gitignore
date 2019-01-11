@@ -14,13 +14,16 @@
 .DS_Store
 .idea
 
-# app
+# web
 .env
-service/web/test-results/
-service/web/tmp/
-service/web/routes/
 service/web/vendor
 service/web/log
+
+# web app
+service/web/app/test-results
+# auto generate files
+service/web/app/tmp
+service/web/app/routes
 
 # mysql
 service/mysql/logs
