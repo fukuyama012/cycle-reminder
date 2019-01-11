@@ -57,7 +57,7 @@ func Register() {
 				},
 			},
 			&revel.MethodType{
-				Name: "Oauth",
+				Name: "Login",
 				Args: []*revel.MethodArg{ 
 				},
 				RenderArgNames: map[int][]string{ 
@@ -68,7 +68,7 @@ func Register() {
 				Args: []*revel.MethodArg{ 
 				},
 				RenderArgNames: map[int][]string{ 
-					51: []string{ 
+					49: []string{ 
 						"email",
 					},
 				},
@@ -78,7 +78,7 @@ func Register() {
 				Args: []*revel.MethodArg{ 
 				},
 				RenderArgNames: map[int][]string{ 
-					92: []string{ 
+					73: []string{ 
 					},
 				},
 			},

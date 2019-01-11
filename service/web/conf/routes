@@ -8,11 +8,11 @@ module:testrunner
 
 
 GET     /                                       Auth.Index
-GET     /login                                  Auth.Oauth
+GET     /login                                  Auth.Login
 GET     /logout                                 Auth.Logout
-GET     /login/callback                         Auth.Callback
+GET     /auth/callback                          Auth.Callback
 
-#GET     /lp                                    App.Index
+GET     /top                                    App.Index
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

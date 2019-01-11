@@ -29,11 +29,11 @@ func (_ tAuth) Index(
 	return revel.MainRouter.Reverse("Auth.Index", args).URL
 }
 
-func (_ tAuth) Oauth(
+func (_ tAuth) Login(
 		) string {
 	args := make(map[string]string)
 	
-	return revel.MainRouter.Reverse("Auth.Oauth", args).URL
+	return revel.MainRouter.Reverse("Auth.Login", args).URL
 }
 
 func (_ tAuth) Callback(

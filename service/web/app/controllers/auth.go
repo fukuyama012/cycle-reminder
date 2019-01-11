@@ -18,7 +18,7 @@ func (c Auth) Index() revel.Result {
 }
 
 // oauth認証する
-func (c Auth) Oauth() revel.Result {
+func (c Auth) Login() revel.Result {
 	key := services.RandString(10)
 
 	c.Session[googleOauthSession] = key
