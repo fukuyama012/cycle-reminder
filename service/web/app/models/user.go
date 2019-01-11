@@ -11,7 +11,7 @@ type User struct {
 	ReminderLogs []ReminderLog
 }
 
-
+// IDで検索
 func (user *User) GetById(id uint) error {
 	user.ID = id
 	if err := DB.First(&user).Error; err != nil {
@@ -21,6 +21,28 @@ func (user *User) GetById(id uint) error {
 		return err
 	}
 	return nil
+}
+
+// Eメールで検索
+func (user *User) GetByEmail(email string) error {
+	if err := DB.Where("email = ?", email).First(&user).Error; err != nil {
+		if gorm.IsRecordNotFoundError(err){
+			return gorm.ErrRecordNotFound
+		}
+		return err
+	}
+	return nil
+}
+
+// 新規ユーザー作成
+func CreateUser(email string) (*User, error)  {
+	user := User{
+		Email: email,
+	}
+	if err := DB.Create(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
 
 func GetAllUsers() ([]User, error) {
