@@ -1,17 +1,16 @@
-{{set . "title" "Home"}}
+{{set . "title" "Login"}}
 {{template "header.html" .}}
 
 <header class="jumbotron" style="background-color:#A9F16C">
   <div class="container">
     <div class="row">
-      <h1>cycle reminder TOP</h1>
+      <h1>Callback Page</h1>
       <p></p>
     </div>
   </div>
 </header>
 
-<a href="login">Login</a>
-
+<p>{{.email}}</p>
 <div class="container">
   <div class="row">
     <div class="span6">
