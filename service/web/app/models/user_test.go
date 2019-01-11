@@ -28,6 +28,29 @@ func TestUser_CreateUser(t *testing.T) {
 	}
 }
 
+// 新規ユーザー作成 バリデーションエラー
+func TestUser_CreateUserValidateError(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		in  string
+	}{
+		{""},
+		{"0"},
+		{"-"},
+		{"aaaa@"},
+		{"@aaaa@example.com"},
+		{"abcratyart.com"},
+		{"111"},
+		{"111.jp"},
+	}
+	for _, tt := range tests {
+		user, err := models.CreateUser(tt.in)
+		// バリデーションが正常に動作している
+		assert.Error(t, err)
+		assert.Nil(t, user)
+	}
+}
+
 // 新規登録　ユニークキー重複登録エラー
 func TestUser_CreateUserDuplicate(t *testing.T) {
 	prepareTestDB()
