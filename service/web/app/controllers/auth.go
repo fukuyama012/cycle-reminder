@@ -14,7 +14,10 @@ type Auth struct {
 
 // TOPページ　セッション有ればアプリへ 無ければLPへ
 func (c Auth) Index() revel.Result {
-	return c.Render()
+	// TODO 有効なセッション有る時、アプリへ
+	
+	// セッション無ければLPへ
+	return c.Redirect(routes.App.Index())
 }
 
 // oauth認証する
@@ -70,7 +73,10 @@ func (c Auth) isValidCallbackSession() bool  {
 
 // ログアウト処理　セッション削除
 func (c Auth) Logout() revel.Result {
-	return c.Render()
+	for k := range c.Session {
+		delete(c.Session, k)
+	}
+	return c.Redirect(routes.App.Index())
 }
 
 

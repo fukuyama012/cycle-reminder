@@ -52,8 +52,6 @@ func Register() {
 				Args: []*revel.MethodArg{ 
 				},
 				RenderArgNames: map[int][]string{ 
-					17: []string{ 
-					},
 				},
 			},
 			&revel.MethodType{
@@ -68,7 +66,7 @@ func Register() {
 				Args: []*revel.MethodArg{ 
 				},
 				RenderArgNames: map[int][]string{ 
-					49: []string{ 
+					52: []string{ 
 						"email",
 					},
 				},
@@ -78,8 +76,6 @@ func Register() {
 				Args: []*revel.MethodArg{ 
 				},
 				RenderArgNames: map[int][]string{ 
-					73: []string{ 
-					},
 				},
 			},
 			
