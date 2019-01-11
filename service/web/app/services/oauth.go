@@ -53,7 +53,7 @@ func getConnectConfig() *oauth2.Config {
 			AuthURL:  authorizeEndpoint,
 			TokenURL: tokenEndpoint,
 		},
-		Scopes:      []string{"openid", "email", "profile"},
+		Scopes:      []string{"openid", "email"},
 		RedirectURL: os.Getenv("CALL_BACK_URL") + "/auth/callback",
 	}
 	return config

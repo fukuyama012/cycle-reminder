@@ -43,11 +43,10 @@ func (c Auth) Callback() revel.Result {
 
 	oauthInfo, err := services.GetOauthInfo(code)
 	if err != nil {
-		c.Log.Errorf("%v", err)
+		c.Log.Errorf("%#v", err)
 		return c.Redirect(routes.App.Index())
 	}
 
-	//revel.AppLog.Infof("oauthinfo %v", oauthInfo)
 	email := oauthInfo.Email
 	return c.Render(email)
 }
