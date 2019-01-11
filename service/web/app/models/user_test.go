@@ -7,6 +7,45 @@ import (
 	"testing"
 )
 
+// 新規ユーザー作成
+func TestUser_CreateUser(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		in  string
+		out string
+	}{
+		{"insert1@example.com", "insert1@example.com"},
+		{"insert2@example.com", "insert2@example.com"},
+	}
+	for _, tt := range tests {
+		user, err := models.CreateUser(tt.in)
+		if err != nil {
+			t.Error(err)
+		}
+		// メールアドレスが正常に設定されている
+		assert.Equal(t, tt.out, user.Email)
+		assert.NotEqual(t, uint(0), user.ID)
+	}
+}
+
+// 新規登録　ユニークキー重複登録エラー
+func TestUser_CreateUserDuplicate(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		in  string
+	}{
+		{"test1@example.com"},
+	}
+	for _, tt := range tests {
+		user, err := models.CreateUser(tt.in)
+		// ユニークキー制約でduplicateエラー発生する
+		if err == nil {
+			t.Error("can not be detected duplicate entry")
+		}
+		assert.Nil(t, user)
+	}
+}
+
 // IDで検索
 func TestUser_GetById(t *testing.T) {
 	prepareTestDB()
@@ -69,40 +108,69 @@ func TestUser_GetByEmail(t *testing.T) {
 	}
 }
 
-// 新規ユーザー作成
-func TestUser_CreateUser(t *testing.T) {
+// ユーザー削除
+func TestUser_DeleteUserById(t *testing.T) {
 	tests := []struct {
-		in  string
-		out string
+		in  uint
+		out bool
 	}{
-		{"insert1@example.com", "insert1@example.com"},
-		{"insert2@example.com", "insert2@example.com"},
+		{1, true},
+		{2, true}, 
+		{9999, false},
 	}
 	for _, tt := range tests {
-		user, err := models.CreateUser(tt.in)
-		if err != nil {
-			t.Error(err)
+		recordCountBefore, errCount := models.CountUser()
+		if errCount != nil {
+			t.Errorf("user count err %#v", errCount)
 		}
-		// メールアドレスが正常に設定されている
-		assert.Equal(t, tt.out, user.Email)
-		assert.NotEqual(t, uint(0), user.ID)
+		
+		user := models.User{}
+		err := user.DeleteUserById(tt.in);
+		if err != nil {
+			t.Errorf("User Delete err %#v", err)
+		}
+		recordCountAfter, errCount := models.CountUser()
+		if errCount != nil {
+			t.Errorf("user count err %#v", errCount)
+		}
+		if tt.out {
+			// レコードが減少している
+			assert.Equal(t, recordCountBefore - 1, recordCountAfter)
+		} else {
+			// 存在しないユーザー
+			// レコードが減少していない
+			assert.Equal(t, recordCountBefore, recordCountAfter)
+		}
 	}
 }
 
-// 新規登録　ユニークキー重複登録エラー
-func TestUser_CreateUserDuplicate(t *testing.T) {
+// ユーザー削除 id=0の場合は個別エラー（適切にエラー処理しないと全て削除される）
+func TestUser_DeleteUserByIdZeroValueError(t *testing.T) {
+	prepareTestDB()
 	tests := []struct {
-		in  string
+		in  uint
+		out bool
 	}{
-		{"test1@example.com"},
+		{0, false},
 	}
 	for _, tt := range tests {
-		user, err := models.CreateUser(tt.in)
-		// ユニークキー制約でduplicateエラー発生する
+		recordCountBefore, errCount := models.CountUser()
+		if errCount != nil {
+			t.Errorf("user count err %#v", errCount)
+		}
+
+		user := models.User{}
+		err := user.DeleteUserById(tt.in);
 		if err == nil {
-			t.Error("can not be detected duplicate entry")
-		} 
-		assert.Nil(t, user)
+			t.Errorf("cant detect Delete err %#v", err)
+		}
+		recordCountAfter, errCount := models.CountUser()
+		if errCount != nil {
+			t.Errorf("user count err %#v", errCount)
+		}
+		// id=0指定エラー時
+		// レコードが減少していない
+		assert.Equal(t, recordCountBefore, recordCountAfter)
 	}
 }
 
