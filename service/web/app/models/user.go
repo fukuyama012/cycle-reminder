@@ -3,19 +3,28 @@ package models
 import (
 	"errors"
 	"github.com/jinzhu/gorm"
+	"gopkg.in/go-playground/validator.v9"
 )
 
 type User struct {
 	gorm.Model
-	Email string `gorm:"size:255;not null;unique_index"`
+	Email string `gorm:"size:255;not null;unique_index" validate:"required,email"`
 	ReminderSettings []ReminderSetting
 	ReminderLogs []ReminderLog
+}
+
+func (user *User) validate() error {
+	return validator.New().Struct(*user)
 }
 
 // 新規ユーザー作成
 func CreateUser(email string) (*User, error)  {
 	user := User{
 		Email: email,
+	}
+	// validator.v9
+	if err := user.validate(); err != nil {
+		return nil, err
 	}
 	if err := DB.Create(&user).Error; err != nil {
 		return nil, err
