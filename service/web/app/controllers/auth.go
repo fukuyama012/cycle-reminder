@@ -6,7 +6,10 @@ import (
 	"github.com/revel/revel"
 )
 
-const googleOauthSession = "google_oauth_session"
+const (
+	googleOauthSession  = "google_oauth_session"
+	serviceLoginSession = "service_login_session"
+)
 
 type Auth struct {
 	*revel.Controller
@@ -14,10 +17,13 @@ type Auth struct {
 
 // TOPページ　セッション有ればアプリへ 無ければLPへ
 func (c Auth) Index() revel.Result {
-	// TODO 有効なセッション有る時、アプリへ
-	
-	// セッション無ければLPへ
-	return c.Redirect(routes.App.Index())
+	// loginチェック
+	_, err := c.Session.Get(serviceLoginSession);
+	if err != nil {
+		// セッション無ければLPへ
+		return c.Redirect(routes.App.Index())
+	}
+	return c.Redirect(routes.Reminders.Index())
 }
 
 // oauth認証する
@@ -43,12 +49,18 @@ func (c Auth) Callback() revel.Result {
 
 	oauthInfo, err := services.GetOauthInfo(code)
 	if err != nil {
-		c.Log.Errorf("%#v", err)
+		c.Log.Errorf("oauth info, %#v", err)
 		return c.Redirect(routes.App.Index())
 	}
 
-	email := oauthInfo.Email
-	return c.Render(email)
+	userId, err := services.GetUserIdOrCreateUserId(oauthInfo.Email)
+	if err != nil {
+		c.Log.Errorf("get or create userId, %#v", err)
+		return c.Redirect(routes.App.Index())
+	}
+	
+	c.Session[serviceLoginSession] = userId
+	return c.Redirect(routes.Reminders.Index())
 }
 
 // セッションを通じて正当なリクエストかチェック
@@ -58,12 +70,12 @@ func (c Auth) isValidCallbackSession() bool  {
 		c.Log.Error("not exists Callback Session")
 		return false
 	}
-	oauthSession, ok := c.Session[googleOauthSession];
-	if !ok {
+	oauthSession, err := c.Session.Get(googleOauthSession);
+	if err != nil {
 		c.Log.Error("not exists Oauth Session")
 		return false
 	}
-	if oauthSession.(string) != state {
+	if oauthSession != state {
 		c.Log.Error("invalid Callback Session")
 		return false
 	}
