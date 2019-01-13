@@ -148,7 +148,7 @@ func TestUser_DeleteUserById(t *testing.T) {
 		}
 		
 		user := models.User{}
-		err := user.DeleteUserById(tt.in);
+		err := user.DeleteById(tt.in);
 		if err != nil {
 			t.Errorf("User Delete err %#v", err)
 		}
@@ -183,10 +183,8 @@ func TestUser_DeleteUserByIdZeroValueError(t *testing.T) {
 		}
 
 		user := models.User{}
-		err := user.DeleteUserById(tt.in);
-		if err == nil {
-			t.Errorf("cant detect Delete err %#v", err)
-		}
+		err := user.DeleteById(tt.in);
+		assert.Error(t, err)
 		recordCountAfter, errCount := models.CountUser()
 		if errCount != nil {
 			t.Errorf("user count err %#v", errCount)
