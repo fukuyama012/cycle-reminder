@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"github.com/jinzhu/gorm"
 	"gopkg.in/go-playground/validator.v9"
 )
@@ -48,8 +49,39 @@ func CreateReminderSetting(user User, name string, notifyTitle string, notifyTex
 // リマインダー数カウント
 func CountReminderSetting() (int, error) {
 	var count int
-	err := DB.Model(&ReminderSetting{}).Count(&count).Error
+	err := DB.Unscoped().Model(&ReminderSetting{}).Count(&count).Error
 	return count, err
+}
+
+// ユーザーの全リマインド設定取得
+func GetReminderSettingsByUser(user User) ([]ReminderSetting, error) {
+	var rSettings []ReminderSetting
+	if err := DB.Where("user_id = ?", user.ID).Find(&rSettings).Error; err != nil {
+		return nil, err
+	}
+	return rSettings, nil
+}
+
+// IDで検索
+func (rSet *ReminderSetting) GetById(id uint) error {
+	rSet.ID = id
+	if err := DB.First(&rSet).Error; err != nil {
+		if gorm.IsRecordNotFoundError(err){
+			return gorm.ErrRecordNotFound
+		}
+		return err
+	}
+	return nil
+}
+
+// IDで削除
+func (rs *ReminderSetting) DeleteById(id uint) error {
+	if id == 0 {
+		return errors.New("empty ReminderSetting Id!")
+	}
+	rs.ID = id
+	// 物理削除
+	return DB.Unscoped().Delete(&rs).Error
 }
 
 // インサート用にnumber値を取得
