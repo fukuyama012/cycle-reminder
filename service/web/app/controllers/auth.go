@@ -70,12 +70,12 @@ func (c Auth) isValidCallbackSession() bool  {
 		c.Log.Error("not exists Callback Session")
 		return false
 	}
-	oauthSession, ok := c.Session[googleOauthSession];
-	if !ok {
+	oauthSession, err := c.Session.Get(googleOauthSession);
+	if err != nil {
 		c.Log.Error("not exists Oauth Session")
 		return false
 	}
-	if oauthSession.(string) != state {
+	if oauthSession != state {
 		c.Log.Error("invalid Callback Session")
 		return false
 	}
