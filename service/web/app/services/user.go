@@ -20,6 +20,17 @@ func GetUserIdOrCreateUserId(email string) (uint, error) {
 	return user.ID, nil
 }
 
+// ユーザー登録チェック
+func CheckUserId(id uint) (*models.User, error) {
+	user := models.User{}
+	err := user.GetById(id)
+	if err != nil {
+		// record not found or err
+		return nil, err
+	}
+	return &user, nil
+}
+
 // ユーザー登録
 func createUser(email string) (uint, error) {
 	user, err := models.CreateUser(email)
