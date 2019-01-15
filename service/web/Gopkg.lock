@@ -153,6 +153,25 @@
   version = "v0.21.0"
 
 [[projects]]
+  digest = "1:5b0d4e1515984cad857570b38321b3fd73b8bb95eccdb0293d664fd2d3221275"
+  name = "github.com/sendgrid/rest"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "306b9bef57dc36f3435ccfcc08fe6ae2c6920344"
+  version = "v2.4.1"
+
+[[projects]]
+  digest = "1:cd7ada429fd852fe117b8a7e03f4813a922c97dbc6e9d1cda0daf166c45ba5c0"
+  name = "github.com/sendgrid/sendgrid-go"
+  packages = [
+    ".",
+    "helpers/mail",
+  ]
+  pruneopts = "T"
+  revision = "8caf17aa96b4a98bae8bd216878dd50ff12897b5"
+  version = "v3.4.1"
+
+[[projects]]
   digest = "1:e95496462101745805bd4e041a5b841e108c7cf761264d53648246308de2761e"
   name = "github.com/stretchr/testify"
   packages = ["assert"]
@@ -296,6 +315,9 @@
     "github.com/revel/modules/testrunner/app/controllers",
     "github.com/revel/revel",
     "github.com/revel/revel/testing",
+    "github.com/sendgrid/rest",
+    "github.com/sendgrid/sendgrid-go",
+    "github.com/sendgrid/sendgrid-go/helpers/mail",
     "github.com/stretchr/testify/assert",
     "golang.org/x/oauth2",
     "google.golang.org/api/oauth2/v2",
