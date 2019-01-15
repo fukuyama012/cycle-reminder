@@ -15,7 +15,7 @@ const (
 
 type Message struct {
 	ToEmail string `validate:"required,email"`
-	Subject string `validate:"max=100"`
+	Subject string `validate:"required,max=100"`
 	Content string `validate:"required,max=1000"`
 }
 
@@ -23,6 +23,7 @@ func (mes Message) validate() error {
 	return validator.New().Struct(mes)
 }
 
+// 送信内容バリデーションしてEメール送信
 func SendMail(toEmail, subject, content string) (*rest.Response, error) {
 	message, err := makeMessage(toEmail, subject, content)
 	if err != nil {
@@ -35,8 +36,7 @@ func SendMail(toEmail, subject, content string) (*rest.Response, error) {
 // 成功ステータスコードか？
 func IsSuccessStatusCode(response *rest.Response) bool {
 	switch response.StatusCode {
-	case SENDGRID_RESPONSE_STATUS_CODE_OK:
-	case SENDGRID_RESPONSE_STATUS_CODE_ACCEPTED:
+	case SENDGRID_RESPONSE_STATUS_CODE_OK, SENDGRID_RESPONSE_STATUS_CODE_ACCEPTED:
 		return true
 	}
 	return false
