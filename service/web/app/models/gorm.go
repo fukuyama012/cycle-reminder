@@ -26,11 +26,11 @@ func connectDB()  {
 		ParseTime:            true,
 		AllowNativePasswords: true,
 	}
-
 	db, err := gorm.Open("mysql", c.FormatDSN())
 	if err != nil {
 		log.Panicf("Failed gorm.Open %v\n", err)
 	}
+	setDB(db)
 	DB = db
 }
 
@@ -41,6 +41,12 @@ func getJSTLocation() *time.Location  {
 		return loc
 	}
 	return time.FixedZone(LocationName, int((9 * time.Hour).Seconds()))
+}
+
+func setDB(db *gorm.DB)  {
+	//db.LogMode(true)
+	db.DB().SetMaxIdleConns(5)
+	db.DB().SetMaxOpenConns(10)
 }
 
 func migrate()  {
