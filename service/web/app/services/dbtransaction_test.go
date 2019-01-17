@@ -15,7 +15,7 @@ func TestTransactAndReceiveData(t *testing.T) {
 	_, err := services.TransactAndReceiveData(models.DB, func(tx *gorm.DB) (i interface{}, e error) {
 		number, _ := models.GetReminderSettingsNextNumberForCreate(tx)
 		user := models.User{}
-		errU := user.GetById(1)
+		errU := user.GetById(tx, 1)
 		assert.Nil(t, errU)
 		data, err := models.CreateReminderSetting(tx, user, "name", "title", "text", 7, number)
 		assert.Nil(t, err)
@@ -39,7 +39,7 @@ func TestTransactAndReceiveDataError(t *testing.T) {
 	_, err := services.TransactAndReceiveData(models.DB, func(tx *gorm.DB) (i interface{}, e error) {
 		number, _ := models.GetReminderSettingsNextNumberForCreate(tx)
 		user := models.User{}
-		errU := user.GetById(1)
+		errU := user.GetById(tx, 1)
 		assert.Nil(t, errU)
 		_, err := models.CreateReminderSetting(tx, user, "name", "title", "text", 7, number)
 		assert.Nil(t, err)
@@ -63,7 +63,7 @@ func TestTransact(t *testing.T) {
 	err := services.Transact(models.DB, func(tx *gorm.DB) (e error) {
 		number, _ := models.GetReminderSettingsNextNumberForCreate(tx)
 		user := models.User{}
-		errU := user.GetById(1)
+		errU := user.GetById(tx, 1)
 		assert.Nil(t, errU)
 		_, err := models.CreateReminderSetting(tx, user, "name", "title", "text", 7, number)
 		assert.Nil(t, err)
@@ -87,7 +87,7 @@ func TestTransactError(t *testing.T) {
 	err := services.Transact(models.DB, func(tx *gorm.DB) (e error) {
 		number, _ := models.GetReminderSettingsNextNumberForCreate(tx)
 		user := models.User{}
-		errU := user.GetById(1)
+		errU := user.GetById(tx, 1)
 		assert.Nil(t, errU)
 		_, err := models.CreateReminderSetting(tx, user, "name", "title", "text", 7, number)
 		assert.Nil(t, err)

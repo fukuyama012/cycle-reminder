@@ -23,7 +23,7 @@ func TestCreateReminderSetting(t *testing.T) {
 	}
 	for _, tt := range tests {
 		user := models.User{}
-		if err := user.GetById(tt.UserID); err != nil {
+		if err := user.GetById(models.DB, tt.UserID); err != nil {
 			t.Error(err)
 		}
 		rSet, err := services.CreateReminderSetting(user, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays)
@@ -38,7 +38,7 @@ func TestCreateReminderSetting(t *testing.T) {
 func TestCreateReminderSettingError(t *testing.T) {
 	prepareTestDB()
 	user1 := models.User{}
-	if err :=user1.GetById(1); err != nil {
+	if err :=user1.GetById(models.DB, 1); err != nil {
 		t.Error(err)
 	}
 	user2 := models.User{}
