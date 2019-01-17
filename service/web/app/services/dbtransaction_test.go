@@ -57,3 +57,51 @@ func TestTransactAndReceiveDataError(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+// インサートトランザクション成功
+func TestTransact(t *testing.T) {
+	prepareTestDB()
+	err := services.Transact(models.DB, func(tx *gorm.DB) (e error) {
+		number, _ := models.GetReminderSettingsNextNumberForCreate(tx)
+		user := models.User{}
+		errU := user.GetById(1)
+		assert.Nil(t, errU)
+		_, err := models.CreateReminderSetting(tx, user, "name", "title", "text", 7, number)
+		assert.Nil(t, err)
+		// トランザクション内でnumber増加
+		numberNext, err := models.GetReminderSettingsNextNumberForCreate(tx)
+		assert.Nil(t, err)
+		assert.Equal(t, uint(5), numberNext)
+		// errorがnilだと正常終了しCommitされる
+		return nil
+	})
+	assert.Nil(t, err)
+	number, err := models.GetReminderSettingsNextNumberForCreate(models.DB)
+	// （トランザクション成功している）
+	assert.Equal(t, uint(5), number)
+	assert.Nil(t, err)
+}
+
+// インサートトランザクション失敗
+func TestTransactError(t *testing.T) {
+	prepareTestDB()
+	err := services.Transact(models.DB, func(tx *gorm.DB) (e error) {
+		number, _ := models.GetReminderSettingsNextNumberForCreate(tx)
+		user := models.User{}
+		errU := user.GetById(1)
+		assert.Nil(t, errU)
+		_, err := models.CreateReminderSetting(tx, user, "name", "title", "text", 7, number)
+		assert.Nil(t, err)
+		// トランザクション内ではnumber増加
+		numberNext, err := models.GetReminderSettingsNextNumberForCreate(tx)
+		assert.Nil(t, err)
+		assert.Equal(t, uint(5), numberNext)
+		// errorを返却するとRollbackされる
+		return errors.New("tran test error")
+	})
+	assert.Error(t, err)
+	number, err := models.GetReminderSettingsNextNumberForCreate(models.DB)
+	// （トランザクション失敗）5→4へRollbackされる
+	assert.Equal(t, uint(4), number)
+	assert.Nil(t, err)
+}
+
