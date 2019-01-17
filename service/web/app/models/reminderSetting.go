@@ -23,7 +23,7 @@ func (rSet *ReminderSetting) validate() error {
 }
 
 // 新規リマインダー作成
-func CreateReminderSetting(user User, name string, notifyTitle string, notifyText string, cycleDays uint) (*ReminderSetting, error) {
+func CreateReminderSetting(user User, name, notifyTitle, notifyText string, cycleDays uint) (*ReminderSetting, error) {
 	number, err := getReminderSettingsNextNumberForInsert()
 	if err != nil {
 		return nil, err
@@ -69,6 +69,22 @@ func (rSet *ReminderSetting) GetById(id uint) error {
 		if gorm.IsRecordNotFoundError(err){
 			return gorm.ErrRecordNotFound
 		}
+		return err
+	}
+	return nil
+}
+
+// 更新
+func (rSet *ReminderSetting) Updates(db *gorm.DB, name, notifyTitle, notifyText string, cycleDays uint) error {
+	rSet.Name = name
+	rSet.NotifyTitle = notifyTitle
+	rSet.NotifyText = notifyText
+	rSet.CycleDays = cycleDays
+	// validator.v9
+	if err := rSet.validate(); err != nil {
+		return err
+	}
+	if err := db.Save(&rSet).Error; err != nil {
 		return err
 	}
 	return nil

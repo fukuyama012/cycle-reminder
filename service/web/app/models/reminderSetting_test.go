@@ -155,6 +155,86 @@ func TestReminderSetting_GetByIdRecordNotFound(t *testing.T) {
 	}
 }
 
+// フィールド更新
+func TestReminderSetting_Updates(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		ID uint
+		Name string
+		NotifyTitle string
+		NotifyText string
+		CycleDays uint
+	}{
+		{1, "test name1", "test title", "test text", 1},
+		{2, "テストネーム2", "テストタイトル2", "テストテキスト2", 365},
+		{1, "test name3", "", "test text3", 10},
+	}
+	for _, tt := range tests {
+		rSet := models.ReminderSetting{}
+		if err := rSet.GetById(tt.ID); err != nil {
+			t.Error(err)
+		}
+		err := rSet.Updates(models.DB, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays)
+		assert.Nil(t, err)
+		assert.Equal(t, tt.Name, rSet.Name)
+		assert.Equal(t, tt.NotifyTitle, rSet.NotifyTitle)
+		assert.Equal(t, tt.NotifyText, rSet.NotifyText)
+		assert.Equal(t, tt.CycleDays, rSet.CycleDays)
+	}
+}
+
+// フィールド更新 バリデーションエラー
+func TestReminderSetting_UpdatesValidationError(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		ID uint
+		Name string
+		NotifyTitle string
+		NotifyText string
+		CycleDays uint
+	}{
+		{1, "", "test title", "test text", 1}, // name無し
+		// name 最大長超え
+		{1, "01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "title", "test text2", 7},
+		{1, "test name", "test title", "", 365}, // テキスト無し
+		// タイトル最大長超え
+		{1, "name", "01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "test text2", 7},
+		{1, "test name", "test title", "text", 0}, // リマインド日数0
+		{1, "test name", "test title", "text", 366}, // リマインド日数最大値超え
+	}
+	for _, tt := range tests {
+		rSet := models.ReminderSetting{}
+		if err := rSet.GetById(tt.ID); err != nil {
+			t.Error(err)
+		}
+		err := rSet.Updates(models.DB, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays)
+		assert.Error(t, err)
+	}
+}
+
+// フィールド更新 バリデーションエラー
+// ID無し
+func TestReminderSetting_UpdatesNoIdError(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		ID uint
+		Name string
+		NotifyTitle string
+		NotifyText string
+		CycleDays uint
+	}{
+		{999, "test name", "test title", "test text", 1}, // ID無し
+	}
+	for _, tt := range tests {
+		rSet := models.ReminderSetting{}
+		if err := rSet.GetById(tt.ID); err == nil {
+			t.Error(err)
+		}
+		err := rSet.Updates(models.DB, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays)
+		assert.Error(t, err)
+	}
+}
+
 // 削除
 func TestReminderSetting_DeleteById(t *testing.T) {
 	prepareTestDB()
