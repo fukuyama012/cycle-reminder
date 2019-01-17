@@ -23,11 +23,7 @@ func (rSet *ReminderSetting) validate() error {
 }
 
 // 新規リマインダー作成
-func CreateReminderSetting(db *gorm.DB, user User, name, notifyTitle, notifyText string, cycleDays uint) (*ReminderSetting, error) {
-	number, err := getReminderSettingsNextNumberForInsert(db)
-	if err != nil {
-		return nil, err
-	}
+func CreateReminderSetting(db *gorm.DB, user User, name, notifyTitle, notifyText string, cycleDays, number uint) (*ReminderSetting, error) {
 	rSet := ReminderSetting{
 		UserID: user.ID,
 		Number: number,
@@ -44,6 +40,18 @@ func CreateReminderSetting(db *gorm.DB, user User, name, notifyTitle, notifyText
 		return nil, err
 	}
 	return &rSet, nil
+}
+
+// インサート用に次点のnumber値を取得
+func GetReminderSettingsNextNumberForCreate(db *gorm.DB) (uint, error) {
+	type Result struct {
+		Max uint
+	}
+	var result Result
+	if err := db.Table("reminder_settings").Select("MAX(`number`) AS `max`").Scan(&result).Error; err != nil {
+		return 0, err
+	}
+	return result.Max + uint(1), nil
 }
 
 // リマインダー数カウント
@@ -100,14 +108,3 @@ func (rs *ReminderSetting) DeleteById(db *gorm.DB, id uint) error {
 	return db.Unscoped().Delete(&rs).Error
 }
 
-// インサート用にnumber値を取得
-func getReminderSettingsNextNumberForInsert(db *gorm.DB) (uint, error) {
-	type Result struct {
-		Max uint
-	}
-	var result Result
-	if err := db.Table("reminder_settings").Select("MAX(`number`) AS `max`").Scan(&result).Error; err != nil {
-		return 0, err
-	}
-	return result.Max + uint(1), nil
-}

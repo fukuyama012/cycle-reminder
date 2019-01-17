@@ -16,21 +16,20 @@ func TestCreateReminderSetting(t *testing.T) {
 		NotifyTitle string
 		NotifyText string
 		CycleDays uint
+		Number uint
 	}{
-		{1, "test name", "test title", "test text", 1},
-		{1, "test name2", "test title2", "test text2", 365},
-		{1, "test name2", "", "test text2", 7},
-		{2, "test name2", "title", "test text2", 7},
+		{1, "test name", "test title", "test text", 1, 4},
+		{1, "test name2", "test title2", "test text2", 365, 5},
+		{1, "test name2", "", "test text2", 7, 6},
+		{2, "test name2", "title", "test text2", 7, 7},
 	}
 	for _, tt := range tests {
 		user := models.User{}
 		if err :=user.GetById(tt.UserID); err != nil {
 			t.Error(err)
 		}
-		rSet, err := models.CreateReminderSetting(models.DB, user, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays)
-		if err != nil {
-			t.Error(err)
-		}
+		rSet, err := models.CreateReminderSetting(models.DB, user, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays, tt.Number)
+		assert.Nil(t, err)
 		// リマインダーが正常に設定されている
 		assert.NotNil(t, rSet)
 		assert.Equal(t, rSet.UserID, user.ID)
@@ -39,6 +38,7 @@ func TestCreateReminderSetting(t *testing.T) {
 
 // 新規ユーザー作成 エラー
 func TestCreateReminderSettingError(t *testing.T) {
+	prepareTestDB()
 	user1 := models.User{}
 	if err :=user1.GetById(1); err != nil {
 		t.Error(err)
@@ -50,22 +50,41 @@ func TestCreateReminderSettingError(t *testing.T) {
 		NotifyTitle string
 		NotifyText string
 		CycleDays uint
+		Number uint
 	}{
-		{user2, "name", "test title", "test text", 1}, // 空user
-		{user1, "", "test title", "test text", 1}, // name無し
+		{user2, "name", "test title", "test text", 1, 4}, // 空user
+		{user1, "", "test title", "test text", 1, 5}, // name無し
 		// name 最大長超え
-		{user1, "01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "title", "test text2", 7},
-		{user1, "test name", "test title", "", 365}, // テキスト無し
+		{user1, "01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "title", "test text2", 7, 6},
+		{user1, "test name", "test title", "", 365, 7}, // テキスト無し
 		// タイトル最大長超え
-		{user1, "name", "01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "test text2", 7},
-		{user1, "test name", "test title", "text", 0}, // リマインド日数0
-		{user1, "test name", "test title", "text", 366}, // リマインド日数最大値超え
+		{user1, "name", "01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "test text2", 7, 8},
+		{user1, "test name", "test title", "text", 0, 9}, // リマインド日数0
+		{user1, "test name", "test title", "text", 366, 10}, // リマインド日数最大値超え
+		{user1, "test name", "test title", "text", 365, 1}, // UserID-Nunberユニークキー重複
 	}
 	for _, tt := range tests {
-		rSet, err := models.CreateReminderSetting(models.DB, tt.user, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays)
-		// リマインダーが正常に設定されている
+		rSet, err := models.CreateReminderSetting(models.DB, tt.user, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays, tt.Number)
+		// リマインダーが正常に設定されていない
 		assert.Error(t, err)
 		assert.Nil(t, rSet)
+	}
+}
+
+// レコードインサート用に最大値の次点numberを取得
+func TestGetReminderSettingsNextNumberForCreate(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		Number uint
+	}{
+		// 3レコード有る前提、変更無し時何回コールしても4
+		{4},
+		{4},
+	}
+	for _, tt := range tests {
+		number, err := models.GetReminderSettingsNextNumberForCreate(models.DB)
+		assert.Nil(t, err)
+		assert.Equal(t, tt.Number, number)
 	}
 }
 
@@ -85,9 +104,7 @@ func TestGetReminderSettingsByUser(t *testing.T) {
 			t.Error(err)
 		}
 		rSettings, err := models.GetReminderSettingsByUser(models.DB, user)
-		if err != nil {
-			t.Error(err)
-		}
+		assert.Nil(t, err)
 		assert.NotNil(t, rSettings)
 		for _, rs := range rSettings {
 			assert.Equal(t, tt.UserIDOut, rs.UserID)
@@ -223,7 +240,7 @@ func TestReminderSetting_UpdatesNoIdError(t *testing.T) {
 		NotifyText string
 		CycleDays uint
 	}{
-		{999, "test name", "test title", "test text", 1}, // ID無し
+		{9999, "test name", "test title", "test text", 1}, // ID無し
 	}
 	for _, tt := range tests {
 		rSet := models.ReminderSetting{}
