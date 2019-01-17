@@ -18,14 +18,14 @@ func TestCreateReminderSetting(t *testing.T) {
 		CycleDays uint
 		Number uint
 	}{
-		{1, "test name", "test title", "test text", 1, 4},
-		{1, "test name2", "test title2", "test text2", 365, 5},
-		{1, "test name2", "", "test text2", 7, 6},
-		{2, "test name2", "title", "test text2", 7, 7},
+		{1, "test name", "test title", "test text", 1, 5},
+		{1, "test name2", "test title2", "test text2", 365, 6},
+		{1, "test name2", "", "test text2", 7, 7},
+		{2, "test name2", "title", "test text2", 7, 8},
 	}
 	for _, tt := range tests {
 		user := models.User{}
-		if err :=user.GetById(tt.UserID); err != nil {
+		if err := user.GetById(models.DB, tt.UserID); err != nil {
 			t.Error(err)
 		}
 		rSet, err := models.CreateReminderSetting(models.DB, user, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays, tt.Number)
@@ -40,7 +40,7 @@ func TestCreateReminderSetting(t *testing.T) {
 func TestCreateReminderSettingError(t *testing.T) {
 	prepareTestDB()
 	user1 := models.User{}
-	if err :=user1.GetById(1); err != nil {
+	if err := user1.GetById(models.DB, 1); err != nil {
 		t.Error(err)
 	}
 	user2 := models.User{}
@@ -100,7 +100,7 @@ func TestGetReminderSettingsByUser(t *testing.T) {
 	}
 	for _, tt := range tests {
 		user := models.User{}
-		if err := user.GetById(tt.UserID); err != nil {
+		if err := user.GetById(models.DB, tt.UserID); err != nil {
 			t.Error(err)
 		}
 		rSettings, err := models.GetReminderSettingsByUser(models.DB, user)
@@ -122,7 +122,7 @@ func TestGetReminderSettingsByUserRecordNotFound(t *testing.T) {
 	}
 	for _, tt := range tests {
 		user := models.User{}
-		if err := user.GetById(tt.UserID); err != nil {
+		if err := user.GetById(models.DB, tt.UserID); err != nil {
 			t.Error(err)
 		}
 		rSettings, err := models.GetReminderSettingsByUser(models.DB, user)

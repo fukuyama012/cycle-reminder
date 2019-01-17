@@ -8,7 +8,7 @@ import (
 // 登録Eメールが有ればUserIdを取得、無ければ登録してUserIDを取得
 func GetUserIdOrCreateUserId(email string) (uint, error) {
 	user := models.User{}
-	err := user.GetByEmail(email)
+	err := user.GetByEmail(models.DB, email)
 	if err != nil {
 		if err != gorm.ErrRecordNotFound {
 			// DBエラー
@@ -23,7 +23,7 @@ func GetUserIdOrCreateUserId(email string) (uint, error) {
 // ユーザー登録チェック
 func CheckUserId(id uint) (*models.User, error) {
 	user := models.User{}
-	err := user.GetById(id)
+	err := user.GetById(models.DB, id)
 	if err != nil {
 		// record not found or err
 		return nil, err
@@ -33,7 +33,7 @@ func CheckUserId(id uint) (*models.User, error) {
 
 // ユーザー登録
 func createUser(email string) (uint, error) {
-	user, err := models.CreateUser(email)
+	user, err := models.CreateUser(models.DB, email)
 	if err != nil {
 		// 失敗
 		return 0, err

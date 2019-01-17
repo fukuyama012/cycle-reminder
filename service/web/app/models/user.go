@@ -18,7 +18,7 @@ func (user *User) validate() error {
 }
 
 // 新規ユーザー作成
-func CreateUser(email string) (*User, error)  {
+func CreateUser(db *gorm.DB, email string) (*User, error)  {
 	user := User{
 		Email: email,
 	}
@@ -26,23 +26,23 @@ func CreateUser(email string) (*User, error)  {
 	if err := user.validate(); err != nil {
 		return nil, err
 	}
-	if err := DB.Create(&user).Error; err != nil {
+	if err := db.Create(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil
 }
 
 // ユーザー数カウント
-func CountUser() (int, error) {
+func CountUser(db *gorm.DB) (int, error) {
 	var count int
-	err := DB.Unscoped().Model(&User{}).Count(&count).Error
+	err := db.Unscoped().Model(&User{}).Count(&count).Error
 	return count, err
 }
 
 // IDで検索
-func (user *User) GetById(id uint) error {
+func (user *User) GetById(db *gorm.DB, id uint) error {
 	user.ID = id
-	if err := DB.First(&user).Error; err != nil {
+	if err := db.First(&user).Error; err != nil {
 		if gorm.IsRecordNotFoundError(err){
 			return gorm.ErrRecordNotFound
 		}
@@ -52,8 +52,8 @@ func (user *User) GetById(id uint) error {
 }
 
 // Eメールで検索
-func (user *User) GetByEmail(email string) error {
-	if err := DB.Where("email = ?", email).First(&user).Error; err != nil {
+func (user *User) GetByEmail(db *gorm.DB, email string) error {
+	if err := db.Where("email = ?", email).First(&user).Error; err != nil {
 		if gorm.IsRecordNotFoundError(err){
 			return gorm.ErrRecordNotFound
 		}
@@ -63,12 +63,12 @@ func (user *User) GetByEmail(email string) error {
 }
 
 // ユーザー削除
-func (user *User) DeleteById(id uint) error {
+func (user *User) DeleteById(db *gorm.DB, id uint) error {
 	if id == 0 {
 		return errors.New("empty userId!")
 	}
 	user.ID = id
 	// 物理削除
-	return DB.Unscoped().Delete(&user).Error
+	return db.Unscoped().Delete(&user).Error
 }
 

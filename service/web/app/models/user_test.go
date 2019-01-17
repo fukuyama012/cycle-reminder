@@ -18,7 +18,7 @@ func TestUserCreateUser(t *testing.T) {
 		{"insert2@example.com", "insert2@example.com"},
 	}
 	for _, tt := range tests {
-		user, err := models.CreateUser(tt.in)
+		user, err := models.CreateUser(models.DB, tt.in)
 		if err != nil {
 			t.Error(err)
 		}
@@ -44,7 +44,7 @@ func TestUserCreateUserValidateError(t *testing.T) {
 		{"111.jp"},
 	}
 	for _, tt := range tests {
-		user, err := models.CreateUser(tt.in)
+		user, err := models.CreateUser(models.DB, tt.in)
 		// バリデーションが正常に動作している
 		assert.Error(t, err)
 		assert.Nil(t, user)
@@ -60,7 +60,7 @@ func TestUserCreateUserDuplicate(t *testing.T) {
 		{"test1@example.com"},
 	}
 	for _, tt := range tests {
-		user, err := models.CreateUser(tt.in)
+		user, err := models.CreateUser(models.DB, tt.in)
 		// ユニークキー制約でduplicateエラー発生する
 		if err == nil {
 			t.Error("can not be detected duplicate entry")
@@ -80,7 +80,7 @@ func TestUser_GetById(t *testing.T) {
 	}
 	for _, tt := range tests {
 		user := models.User{}
-		if err := user.GetById(tt.in); err != nil{
+		if err := user.GetById(models.DB, tt.in); err != nil{
 			t.Error(err)
 		}
 		if user.Email != tt.out {
@@ -100,7 +100,7 @@ func TestUser_GetByIdNotFound(t *testing.T)  {
 	}
 	for _, tt := range tests {
 		user := models.User{}
-		err := user.GetById(tt.in); 
+		err := user.GetById(models.DB, tt.in); 
 		assertT.Equal(gorm.ErrRecordNotFound, err)
 		assert.Equal(t, "", user.Email)
 		assert.Equal(t, tt.in, user.ID)
@@ -118,7 +118,7 @@ func TestUser_GetByEmail(t *testing.T) {
 	}
 	for _, tt := range tests {
 		user := models.User{}
-		err := user.GetByEmail(tt.in)
+		err := user.GetByEmail(models.DB, tt.in)
 		if tt.out {
 			// 存在するメールアドレス
 			assert.NoError(t, err)
@@ -142,17 +142,17 @@ func TestUser_DeleteUserById(t *testing.T) {
 		{9999, false},
 	}
 	for _, tt := range tests {
-		recordCountBefore, errCount := models.CountUser()
+		recordCountBefore, errCount := models.CountUser(models.DB)
 		if errCount != nil {
 			t.Errorf("user count err %#v", errCount)
 		}
 		
 		user := models.User{}
-		err := user.DeleteById(tt.in);
+		err := user.DeleteById(models.DB, tt.in);
 		if err != nil {
 			t.Errorf("User Delete err %#v", err)
 		}
-		recordCountAfter, errCount := models.CountUser()
+		recordCountAfter, errCount := models.CountUser(models.DB)
 		if errCount != nil {
 			t.Errorf("user count err %#v", errCount)
 		}
@@ -177,15 +177,15 @@ func TestUser_DeleteUserByIdZeroValueError(t *testing.T) {
 		{0, false},
 	}
 	for _, tt := range tests {
-		recordCountBefore, errCount := models.CountUser()
+		recordCountBefore, errCount := models.CountUser(models.DB)
 		if errCount != nil {
 			t.Errorf("user count err %#v", errCount)
 		}
 
 		user := models.User{}
-		err := user.DeleteById(tt.in);
+		err := user.DeleteById(models.DB, tt.in);
 		assert.Error(t, err)
-		recordCountAfter, errCount := models.CountUser()
+		recordCountAfter, errCount := models.CountUser(models.DB)
 		if errCount != nil {
 			t.Errorf("user count err %#v", errCount)
 		}
