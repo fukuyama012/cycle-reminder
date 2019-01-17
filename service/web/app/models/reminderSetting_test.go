@@ -27,7 +27,7 @@ func TestCreateReminderSetting(t *testing.T) {
 		if err :=user.GetById(tt.UserID); err != nil {
 			t.Error(err)
 		}
-		rSet, err := models.CreateReminderSetting(user, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays)
+		rSet, err := models.CreateReminderSetting(models.DB, user, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays)
 		if err != nil {
 			t.Error(err)
 		}
@@ -62,7 +62,7 @@ func TestCreateReminderSettingError(t *testing.T) {
 		{user1, "test name", "test title", "text", 366}, // リマインド日数最大値超え
 	}
 	for _, tt := range tests {
-		rSet, err := models.CreateReminderSetting(tt.user, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays)
+		rSet, err := models.CreateReminderSetting(models.DB, tt.user, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays)
 		// リマインダーが正常に設定されている
 		assert.Error(t, err)
 		assert.Nil(t, rSet)
@@ -84,7 +84,7 @@ func TestGetReminderSettingsByUser(t *testing.T) {
 		if err := user.GetById(tt.UserID); err != nil {
 			t.Error(err)
 		}
-		rSettings, err := models.GetReminderSettingsByUser(user)
+		rSettings, err := models.GetReminderSettingsByUser(models.DB, user)
 		if err != nil {
 			t.Error(err)
 		}
@@ -108,7 +108,7 @@ func TestGetReminderSettingsByUserRecordNotFound(t *testing.T) {
 		if err := user.GetById(tt.UserID); err != nil {
 			t.Error(err)
 		}
-		rSettings, err := models.GetReminderSettingsByUser(user)
+		rSettings, err := models.GetReminderSettingsByUser(models.DB, user)
 		// gorm.ErrRecordNotFoundは返却されない
 		assert.NoError(t, err)
 		// モデルの空配列が返却される
@@ -130,7 +130,7 @@ func TestReminderSetting_GetById(t *testing.T) {
 	}
 	for _, tt := range tests {
 		rs := models.ReminderSetting{}
-		if err := rs.GetById(tt.In); err != nil{
+		if err := rs.GetById(models.DB, tt.In); err != nil{
 			t.Error(err)
 		}
 		assert.Equal(t, tt.Name, rs.Name)
@@ -148,7 +148,7 @@ func TestReminderSetting_GetByIdRecordNotFound(t *testing.T) {
 	}
 	for _, tt := range tests {
 		rs := models.ReminderSetting{}
-		err := rs.GetById(tt.in);
+		err := rs.GetById(models.DB, tt.in);
 		assert.Equal(t, gorm.ErrRecordNotFound, err)
 		assert.Equal(t, "", rs.NotifyTitle)
 		assert.Equal(t, tt.in, rs.ID)
@@ -171,7 +171,7 @@ func TestReminderSetting_Updates(t *testing.T) {
 	}
 	for _, tt := range tests {
 		rSet := models.ReminderSetting{}
-		if err := rSet.GetById(tt.ID); err != nil {
+		if err := rSet.GetById(models.DB, tt.ID); err != nil {
 			t.Error(err)
 		}
 		err := rSet.Updates(models.DB, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays)
@@ -204,7 +204,7 @@ func TestReminderSetting_UpdatesValidationError(t *testing.T) {
 	}
 	for _, tt := range tests {
 		rSet := models.ReminderSetting{}
-		if err := rSet.GetById(tt.ID); err != nil {
+		if err := rSet.GetById(models.DB, tt.ID); err != nil {
 			t.Error(err)
 		}
 		err := rSet.Updates(models.DB, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays)
@@ -227,7 +227,7 @@ func TestReminderSetting_UpdatesNoIdError(t *testing.T) {
 	}
 	for _, tt := range tests {
 		rSet := models.ReminderSetting{}
-		if err := rSet.GetById(tt.ID); err == nil {
+		if err := rSet.GetById(models.DB, tt.ID); err == nil {
 			t.Error(err)
 		}
 		err := rSet.Updates(models.DB, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays)
@@ -247,17 +247,17 @@ func TestReminderSetting_DeleteById(t *testing.T) {
 		{9999, false},
 	}
 	for _, tt := range tests {
-		recordCountBefore, errCount := models.CountReminderSetting()
+		recordCountBefore, errCount := models.CountReminderSetting(models.DB)
 		if errCount != nil {
 			t.Errorf("reminder setting count err %#v", errCount)
 		}
 
 		rs := models.ReminderSetting{}
-		err := rs.DeleteById(tt.in);
+		err := rs.DeleteById(models.DB, tt.in);
 		if err != nil {
 			t.Errorf("reminder setting Delete err %#v", err)
 		}
-		recordCountAfter, errCount := models.CountReminderSetting()
+		recordCountAfter, errCount := models.CountReminderSetting(models.DB)
 		if errCount != nil {
 			t.Errorf("reminder setting count err %#v", errCount)
 		}
@@ -281,15 +281,15 @@ func TestReminderSetting_DeleteByIdZeroValueError(t *testing.T) {
 		{0},
 	}
 	for _, tt := range tests {
-		recordCountBefore, errCount := models.CountReminderSetting()
+		recordCountBefore, errCount := models.CountReminderSetting(models.DB)
 		if errCount != nil {
 			t.Errorf("reminder setting count err %#v", errCount)
 		}
 
 		rs := models.ReminderSetting{}
-		err := rs.DeleteById(tt.in);
+		err := rs.DeleteById(models.DB, tt.in);
 		assert.Error(t, err)
-		recordCountAfter, errCount := models.CountReminderSetting()
+		recordCountAfter, errCount := models.CountReminderSetting(models.DB)
 		if errCount != nil {
 			t.Errorf("reminder setting count err %#v", errCount)
 		}

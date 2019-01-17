@@ -23,8 +23,8 @@ func (rSet *ReminderSetting) validate() error {
 }
 
 // 新規リマインダー作成
-func CreateReminderSetting(user User, name, notifyTitle, notifyText string, cycleDays uint) (*ReminderSetting, error) {
-	number, err := getReminderSettingsNextNumberForInsert()
+func CreateReminderSetting(db *gorm.DB, user User, name, notifyTitle, notifyText string, cycleDays uint) (*ReminderSetting, error) {
+	number, err := getReminderSettingsNextNumberForInsert(db)
 	if err != nil {
 		return nil, err
 	}
@@ -40,32 +40,32 @@ func CreateReminderSetting(user User, name, notifyTitle, notifyText string, cycl
 	if err := rSet.validate(); err != nil {
 		return nil, err
 	}
-	if err := DB.Create(&rSet).Error; err != nil {
+	if err := db.Create(&rSet).Error; err != nil {
 		return nil, err
 	}
 	return &rSet, nil
 }
 
 // リマインダー数カウント
-func CountReminderSetting() (int, error) {
+func CountReminderSetting(db *gorm.DB) (int, error) {
 	var count int
-	err := DB.Unscoped().Model(&ReminderSetting{}).Count(&count).Error
+	err := db.Unscoped().Model(&ReminderSetting{}).Count(&count).Error
 	return count, err
 }
 
 // ユーザーの全リマインド設定取得
-func GetReminderSettingsByUser(user User) ([]ReminderSetting, error) {
+func GetReminderSettingsByUser(db *gorm.DB, user User) ([]ReminderSetting, error) {
 	var rSettings []ReminderSetting
-	if err := DB.Where("user_id = ?", user.ID).Find(&rSettings).Error; err != nil {
+	if err := db.Where("user_id = ?", user.ID).Find(&rSettings).Error; err != nil {
 		return nil, err
 	}
 	return rSettings, nil
 }
 
 // IDで検索
-func (rSet *ReminderSetting) GetById(id uint) error {
+func (rSet *ReminderSetting) GetById(db *gorm.DB, id uint) error {
 	rSet.ID = id
-	if err := DB.First(&rSet).Error; err != nil {
+	if err := db.First(&rSet).Error; err != nil {
 		if gorm.IsRecordNotFoundError(err){
 			return gorm.ErrRecordNotFound
 		}
@@ -91,22 +91,22 @@ func (rSet *ReminderSetting) Updates(db *gorm.DB, name, notifyTitle, notifyText 
 }
 
 // IDで削除
-func (rs *ReminderSetting) DeleteById(id uint) error {
+func (rs *ReminderSetting) DeleteById(db *gorm.DB, id uint) error {
 	if id == 0 {
 		return errors.New("empty ReminderSetting Id!")
 	}
 	rs.ID = id
 	// 物理削除
-	return DB.Unscoped().Delete(&rs).Error
+	return db.Unscoped().Delete(&rs).Error
 }
 
 // インサート用にnumber値を取得
-func getReminderSettingsNextNumberForInsert() (uint, error) {
+func getReminderSettingsNextNumberForInsert(db *gorm.DB) (uint, error) {
 	type Result struct {
 		Max uint
 	}
 	var result Result
-	if err := DB.Table("reminder_settings").Select("MAX(`number`) AS `max`").Scan(&result).Error; err != nil {
+	if err := db.Table("reminder_settings").Select("MAX(`number`) AS `max`").Scan(&result).Error; err != nil {
 		return 0, err
 	}
 	return result.Max + uint(1), nil
