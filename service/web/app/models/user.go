@@ -35,7 +35,7 @@ func CreateUser(email string) (*User, error)  {
 // ユーザー数カウント
 func CountUser() (int, error) {
 	var count int
-	err := DB.Model(&User{}).Count(&count).Error
+	err := DB.Unscoped().Model(&User{}).Count(&count).Error
 	return count, err
 }
 
@@ -63,7 +63,7 @@ func (user *User) GetByEmail(email string) error {
 }
 
 // ユーザー削除
-func (user *User) DeleteUserById(id uint) error {
+func (user *User) DeleteById(id uint) error {
 	if id == 0 {
 		return errors.New("empty userId!")
 	}
@@ -72,13 +72,3 @@ func (user *User) DeleteUserById(id uint) error {
 	return DB.Unscoped().Delete(&user).Error
 }
 
-func GetAllUsers() ([]User, error) {
-	var users []User
-	if err := DB.Find(&users).Error; err != nil {
-		if gorm.IsRecordNotFoundError(err){
-			return nil, gorm.ErrRecordNotFound
-		}
-		return nil, err
-	}
-	return users, nil
-}

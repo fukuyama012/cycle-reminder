@@ -5,6 +5,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"log"
 	"os"
+	"time"
 )
 
 var DB *gorm.DB
@@ -21,15 +22,31 @@ func connectDB()  {
 		Passwd:               os.Getenv("MYSQL_PASSWORD"),
 		Addr:                 os.Getenv("MYSQL_ADDRESS")+":"+os.Getenv("MYSQL_PORT"),
 		Net:                  "tcp",
+		Loc:                  getJSTLocation(), // 設定しないとUTCで動作する
 		ParseTime:            true,
 		AllowNativePasswords: true,
 	}
-
 	db, err := gorm.Open("mysql", c.FormatDSN())
 	if err != nil {
 		log.Panicf("Failed gorm.Open %v\n", err)
 	}
+	setDB(db)
 	DB = db
+}
+
+func getJSTLocation() *time.Location  {
+	var LocationName = "Asia/Tokyo"
+	loc, err := time.LoadLocation(LocationName)
+	if err == nil {
+		return loc
+	}
+	return time.FixedZone(LocationName, int((9 * time.Hour).Seconds()))
+}
+
+func setDB(db *gorm.DB)  {
+	//db.LogMode(true)
+	db.DB().SetMaxIdleConns(5)
+	db.DB().SetMaxOpenConns(10)
 }
 
 func migrate()  {

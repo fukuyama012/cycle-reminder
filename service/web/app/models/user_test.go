@@ -8,7 +8,7 @@ import (
 )
 
 // 新規ユーザー作成
-func TestUser_CreateUser(t *testing.T) {
+func TestUserCreateUser(t *testing.T) {
 	prepareTestDB()
 	tests := []struct {
 		in  string
@@ -29,7 +29,7 @@ func TestUser_CreateUser(t *testing.T) {
 }
 
 // 新規ユーザー作成 バリデーションエラー
-func TestUser_CreateUserValidateError(t *testing.T) {
+func TestUserCreateUserValidateError(t *testing.T) {
 	prepareTestDB()
 	tests := []struct {
 		in  string
@@ -52,7 +52,7 @@ func TestUser_CreateUserValidateError(t *testing.T) {
 }
 
 // 新規登録　ユニークキー重複登録エラー
-func TestUser_CreateUserDuplicate(t *testing.T) {
+func TestUserCreateUserDuplicate(t *testing.T) {
 	prepareTestDB()
 	tests := []struct {
 		in  string
@@ -148,7 +148,7 @@ func TestUser_DeleteUserById(t *testing.T) {
 		}
 		
 		user := models.User{}
-		err := user.DeleteUserById(tt.in);
+		err := user.DeleteById(tt.in);
 		if err != nil {
 			t.Errorf("User Delete err %#v", err)
 		}
@@ -183,10 +183,8 @@ func TestUser_DeleteUserByIdZeroValueError(t *testing.T) {
 		}
 
 		user := models.User{}
-		err := user.DeleteUserById(tt.in);
-		if err == nil {
-			t.Errorf("cant detect Delete err %#v", err)
-		}
+		err := user.DeleteById(tt.in);
+		assert.Error(t, err)
 		recordCountAfter, errCount := models.CountUser()
 		if errCount != nil {
 			t.Errorf("user count err %#v", errCount)
@@ -197,13 +195,3 @@ func TestUser_DeleteUserByIdZeroValueError(t *testing.T) {
 	}
 }
 
-/*
-func TestUser_GetAll(t *testing.T) {
-	prepareTestDB()
-	users, err := models.GetAllUsers()
-	if err != nil {
-		t.Error(err)
-	}
-	assert.Equal(t, 2, len(users))
-}
-*/
