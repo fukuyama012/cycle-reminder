@@ -19,8 +19,7 @@ func CreateReminderSetting(user models.User, name, notifyTitle, notifyText strin
 	})
 	rSet, ok := data.(*models.ReminderSetting)
 	if !ok {
-		log.Fatal("cant cast ReminderSetting")
-		return nil, err
+		log.Panicf("cant cast ReminderSetting %#v\n", err)
 	}
 	return rSet, err
 }
