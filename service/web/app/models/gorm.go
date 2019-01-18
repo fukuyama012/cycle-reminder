@@ -22,7 +22,7 @@ func connectDB()  {
 		Passwd:               os.Getenv("MYSQL_PASSWORD"),
 		Addr:                 os.Getenv("MYSQL_ADDRESS")+":"+os.Getenv("MYSQL_PORT"),
 		Net:                  "tcp",
-		Loc:                  getJSTLocation(), // 設定しないとUTCで動作する
+		Loc:                  GetJSTLocation(), // 設定しないとUTCで動作する
 		ParseTime:            true,
 		AllowNativePasswords: true,
 	}
@@ -34,7 +34,7 @@ func connectDB()  {
 	DB = db
 }
 
-func getJSTLocation() *time.Location  {
+func GetJSTLocation() *time.Location  {
 	var LocationName = "Asia/Tokyo"
 	loc, err := time.LoadLocation(LocationName)
 	if err == nil {

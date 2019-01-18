@@ -24,7 +24,12 @@ func (rSch *ReminderSchedule) validate() error {
 
 // カスタムバリデーションの詳細
 func isDateFormat(fl validator.FieldLevel) bool {
-	_, err := time.Parse("2006-01-02", fl.Field().String())
+	rSet, ok := fl.Top().Interface().(ReminderSchedule)
+	if !ok {
+		return false
+	}
+	// date部分の文字列だけ取り出して比較
+	_, err := time.Parse("2006-01-02", rSet.NotifyDate.String()[0:10])
 	if err != nil {
 		return false
 	}
