@@ -10,11 +10,25 @@ import (
 type ReminderSchedule struct {
 	gorm.Model
 	ReminderSettingID uint `gorm:"not null;" validate:"required"`
-	NotifyDate time.Time `gorm:"Type:date;not null;" validate:"required"`
+	NotifyDate time.Time `gorm:"Type:date;not null;" validate:"required,date"`
 }
 
 func (rSch *ReminderSchedule) validate() error {
-	return validator.New().Struct(*rSch)
+	validate := validator.New()
+	// 日付フォーマット向けにカスタムバリデーション追加
+	if err := validate.RegisterValidation("date", isDateFormat); err != nil {
+		return err
+	}
+	return validate.Struct(*rSch)
+}
+
+// カスタムバリデーションの詳細
+func isDateFormat(fl validator.FieldLevel) bool {
+	_, err := time.Parse("2006-01-02", fl.Field().String())
+	if err != nil {
+		return false
+	}
+	return true
 }
 
 // 新規リマインダー予定作成
