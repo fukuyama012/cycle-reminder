@@ -253,43 +253,25 @@ func TestReminderSetting_UpdatesNoIdError(t *testing.T) {
 }
 
 // 削除
+// 関数単体のチェック、レコード減少チェックはトランザクション込でservices/remindersetting_test.goで実施
 func TestReminderSetting_DeleteById(t *testing.T) {
 	prepareTestDB()
 	tests := []struct {
 		in  uint
-		out bool
 	}{
-		{1, true},
-		{2, true},
-		{9999, false},
+		{1},
+		{2},
+		{9999},
 	}
 	for _, tt := range tests {
-		recordCountBefore, errCount := models.CountReminderSetting(models.DB)
-		if errCount != nil {
-			t.Errorf("reminder setting count err %#v", errCount)
-		}
-
 		rs := models.ReminderSetting{}
 		err := rs.DeleteById(models.DB, tt.in);
-		if err != nil {
-			t.Errorf("reminder setting Delete err %#v", err)
-		}
-		recordCountAfter, errCount := models.CountReminderSetting(models.DB)
-		if errCount != nil {
-			t.Errorf("reminder setting count err %#v", errCount)
-		}
-		if tt.out {
-			// レコードが減少している
-			assert.Equal(t, recordCountBefore - 1, recordCountAfter)
-		} else {
-			// 存在しないID
-			// レコードが減少していない
-			assert.Equal(t, recordCountBefore, recordCountAfter)
-		}
+		assert.Nil(t, err)
 	}
 }
 
 // 削除 id=0の場合は個別エラー（適切にエラー処理しないと全て削除される）
+// 関数単体のチェック、レコード減少チェックはトランザクション込でservices/remindersetting_test.goで実施
 func TestReminderSetting_DeleteByIdZeroValueError(t *testing.T) {
 	prepareTestDB()
 	tests := []struct {
@@ -298,20 +280,8 @@ func TestReminderSetting_DeleteByIdZeroValueError(t *testing.T) {
 		{0},
 	}
 	for _, tt := range tests {
-		recordCountBefore, errCount := models.CountReminderSetting(models.DB)
-		if errCount != nil {
-			t.Errorf("reminder setting count err %#v", errCount)
-		}
-
 		rs := models.ReminderSetting{}
 		err := rs.DeleteById(models.DB, tt.in);
 		assert.Error(t, err)
-		recordCountAfter, errCount := models.CountReminderSetting(models.DB)
-		if errCount != nil {
-			t.Errorf("reminder setting count err %#v", errCount)
-		}
-		// id=0指定エラー時
-		// レコードが減少していない
-		assert.Equal(t, recordCountBefore, recordCountAfter)
 	}
 }
