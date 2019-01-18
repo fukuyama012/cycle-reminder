@@ -100,7 +100,7 @@ func TestUser_GetByIdNotFound(t *testing.T)  {
 	}
 	for _, tt := range tests {
 		user := models.User{}
-		err := user.GetById(models.DB, tt.in); 
+		err := user.GetById(models.DB, tt.in);
 		assertT.Equal(gorm.ErrRecordNotFound, err)
 		assert.Equal(t, "", user.Email)
 		assert.Equal(t, tt.in, user.ID)
@@ -138,7 +138,7 @@ func TestUser_DeleteUserById(t *testing.T) {
 		out bool
 	}{
 		{1, true},
-		{2, true}, 
+		{2, true},
 		{9999, false},
 	}
 	for _, tt := range tests {
@@ -146,7 +146,7 @@ func TestUser_DeleteUserById(t *testing.T) {
 		if errCount != nil {
 			t.Errorf("user count err %#v", errCount)
 		}
-		
+
 		user := models.User{}
 		err := user.DeleteById(models.DB, tt.in);
 		if err != nil {
