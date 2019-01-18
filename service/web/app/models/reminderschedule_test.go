@@ -2,6 +2,7 @@ package models_test
 
 import (
 	"github.com/fukuyama012/cycle-reminder/service/web/app/models"
+	"github.com/jinzhu/gorm"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -56,4 +57,78 @@ func TestCreateReminderScheduleError(t *testing.T) {
 		// 正常に設定されていない
 		assert.Nil(t, rSch)
 	}
+}
+
+// リレーション情報で検索
+func TestReminderSchedule_GetByReminderSetting(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		ReminderSettingID uint
+	}{
+		{1},
+		{2},
+	}
+	for _, tt := range tests {
+		rSet := models.ReminderSetting{}
+		errSet := rSet.GetById(models.DB, tt.ReminderSettingID)
+		assert.Nil(t, errSet)
+		
+		rSch := models.ReminderSchedule{}
+		err := rSch.GetByReminderSetting(models.DB, rSet)
+		// 存在する
+		assert.Nil(t, err)
+		assert.NotEqual(t, uint(0), rSch.ID)
+	}
+}
+
+// リレーション情報で検索 存在しない
+func TestReminderSchedule_GetByReminderSettingNotExists(t *testing.T) {
+	prepareTestDB()
+	// 空情報を用意
+	rSet := models.ReminderSetting{}
+
+	rSch := models.ReminderSchedule{}
+	err := rSch.GetByReminderSetting(models.DB, rSet)
+	// 存在しない
+	assert.Equal(t, gorm.ErrRecordNotFound, err)
+	assert.Equal(t, uint(0), rSch.ID)
+}
+
+// ユーザー削除
+// エラー吐かない事だけチェック、レコード減少チェックはトランザクション込でservices/user_test.goで実施
+func TestReminderSchedule_DeleteByReminderSetting(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		ReminderSettingID uint
+	}{
+		{1},
+		{2},
+	}
+	for _, tt := range tests {
+		rSet := models.ReminderSetting{}
+		errSet := rSet.GetById(models.DB, tt.ReminderSettingID)
+		assert.Nil(t, errSet)
+		
+		rSch := models.ReminderSchedule{}
+		err := rSch.DeleteByReminderSetting(models.DB, rSet);
+		assert.Nil(t, err)
+	}
+}
+
+// ユーザー削除エラー
+// エラー吐かない事だけチェック、レコード減少チェックはトランザクション込でservices/user_test.goで実施
+func TestReminderSchedule_DeleteByReminderSettingError(t *testing.T) {
+	prepareTestDB()
+	// 空情報を用意
+	rSet := models.ReminderSetting{}
+
+	rSch := models.ReminderSchedule{}
+	err := rSch.DeleteByReminderSetting(models.DB, rSet);
+	assert.Error(t, err)
+}
+
+func TestCountReminderSchedule(t *testing.T) {
+	count, err := models.CountReminderSchedule(models.DB)
+	assert.Nil(t, err)
+	assert.Equal(t, 3, count)
 }
