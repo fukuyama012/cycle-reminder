@@ -132,66 +132,35 @@ func TestUser_GetByEmail(t *testing.T) {
 }
 
 // ユーザー削除
+// エラー吐かない事だけチェック、レコード減少チェックはトランザクション込でservices/user_test.goで実施
 func TestUser_DeleteUserById(t *testing.T) {
 	tests := []struct {
 		in  uint
-		out bool
 	}{
-		{1, true},
-		{2, true},
-		{9999, false},
+		{1},
+		{2},
+		{9999},
 	}
 	for _, tt := range tests {
-		recordCountBefore, errCount := models.CountUser(models.DB)
-		if errCount != nil {
-			t.Errorf("user count err %#v", errCount)
-		}
-
 		user := models.User{}
 		err := user.DeleteById(models.DB, tt.in);
-		if err != nil {
-			t.Errorf("User Delete err %#v", err)
-		}
-		recordCountAfter, errCount := models.CountUser(models.DB)
-		if errCount != nil {
-			t.Errorf("user count err %#v", errCount)
-		}
-		if tt.out {
-			// レコードが減少している
-			assert.Equal(t, recordCountBefore - 1, recordCountAfter)
-		} else {
-			// 存在しないユーザー
-			// レコードが減少していない
-			assert.Equal(t, recordCountBefore, recordCountAfter)
-		}
+		assert.Nil(t, err)
 	}
 }
 
 // ユーザー削除 id=0の場合は個別エラー（適切にエラー処理しないと全て削除される）
+// 関数単体のチェック、レコード減少チェックはトランザクション込でservices/user_test.goで実施
 func TestUser_DeleteUserByIdZeroValueError(t *testing.T) {
 	prepareTestDB()
 	tests := []struct {
 		in  uint
-		out bool
 	}{
-		{0, false},
+		{0},// id=0指定エラー時
 	}
 	for _, tt := range tests {
-		recordCountBefore, errCount := models.CountUser(models.DB)
-		if errCount != nil {
-			t.Errorf("user count err %#v", errCount)
-		}
-
 		user := models.User{}
 		err := user.DeleteById(models.DB, tt.in);
 		assert.Error(t, err)
-		recordCountAfter, errCount := models.CountUser(models.DB)
-		if errCount != nil {
-			t.Errorf("user count err %#v", errCount)
-		}
-		// id=0指定エラー時
-		// レコードが減少していない
-		assert.Equal(t, recordCountBefore, recordCountAfter)
 	}
 }
 
