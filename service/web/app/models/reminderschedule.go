@@ -9,7 +9,7 @@ import (
 
 type ReminderSchedule struct {
 	gorm.Model
-	ReminderSettingID uint `gorm:"not null;" validate:"required"`
+	ReminderSettingID uint `gorm:"not null;" validate:"required,min=1"`
 	NotifyDate time.Time `gorm:"Type:date;not null;" validate:"required,date"`
 }
 
@@ -65,6 +65,19 @@ func (rSch *ReminderSchedule) GetByReminderSetting(db *gorm.DB, rSet ReminderSet
 		if gorm.IsRecordNotFoundError(err){
 			return gorm.ErrRecordNotFound
 		}
+		return err
+	}
+	return nil
+}
+
+// 更新
+func (rSch *ReminderSchedule) Updates(db *gorm.DB, notifyDate time.Time) error {
+	rSch.NotifyDate = notifyDate
+	// validator.v9
+	if err := rSch.validate(); err != nil {
+		return err
+	}
+	if err := db.Save(&rSch).Error; err != nil {
 		return err
 	}
 	return nil
