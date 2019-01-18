@@ -95,7 +95,7 @@ func TestReminderSchedule_GetByReminderSettingNotExists(t *testing.T) {
 }
 
 // ユーザー削除
-// エラー吐かない事だけチェック、レコード減少チェックはトランザクション込でservices/user_test.goで実施
+// エラー吐かない事だけチェック、レコード減少チェックはトランザクション込でservicesで実施
 func TestReminderSchedule_DeleteByReminderSetting(t *testing.T) {
 	prepareTestDB()
 	tests := []struct {
@@ -116,7 +116,7 @@ func TestReminderSchedule_DeleteByReminderSetting(t *testing.T) {
 }
 
 // ユーザー削除エラー
-// エラー吐かない事だけチェック、レコード減少チェックはトランザクション込でservices/user_test.goで実施
+// エラー吐かない事だけチェック、レコード減少チェックはトランザクション込でservicesで実施
 func TestReminderSchedule_DeleteByReminderSettingError(t *testing.T) {
 	prepareTestDB()
 	// 空情報を用意
