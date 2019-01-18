@@ -3,6 +3,7 @@ package services_test
 import (
 	"github.com/fukuyama012/cycle-reminder/service/web/app/models"
 	"github.com/fukuyama012/cycle-reminder/service/web/app/services"
+	"github.com/jinzhu/gorm"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -62,5 +63,75 @@ func TestCreateReminderSettingError(t *testing.T) {
 		// リマインダーが正常に設定されていない
 		assert.Error(t, err)
 		assert.Nil(t, rSet)
+	}
+}
+
+// 削除(チェックの整合性の為トランザクション化)
+// modelsのテストだがトランザクション利用するのでservicesにて実施
+func TestReminderSetting_DeleteByIdTransaction(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		in  uint
+		out bool
+	}{
+		{1, true},
+		{2, true},
+		{9999, false},
+	}
+	for _, tt := range tests {
+		err := services.Transact(models.DB, func(tx *gorm.DB) error {
+			recordCountBefore, errCount := models.CountReminderSetting(tx)
+			if errCount != nil {
+				return errCount
+			}
+			rs := models.ReminderSetting{}
+			err := rs.DeleteById(tx, tt.in);
+			assert.Nil(t, err)
+			recordCountAfter, errCount := models.CountReminderSetting(tx)
+			if errCount != nil {
+				return errCount
+			}
+			if tt.out {
+				// レコードが減少している
+				assert.Equal(t, recordCountBefore - 1, recordCountAfter)
+			} else {
+				// 存在しないID
+				// レコードが減少していない
+				assert.Equal(t, recordCountBefore, recordCountAfter)
+			}
+			return nil
+		})
+		assert.Nil(t, err)
+	}
+}
+
+// 削除エラー(チェックの整合性の為トランザクション化)
+// modelsのテストだがトランザクション利用するのでservicesにて実施
+func TestReminderSetting_DeleteByIdErrorTransaction(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		in  uint
+	}{
+		{0},
+	}
+	for _, tt := range tests {
+		err := services.Transact(models.DB, func(tx *gorm.DB) error {
+			recordCountBefore, errCount := models.CountReminderSetting(tx)
+			if errCount != nil {
+				t.Errorf("reminder setting count err %#v", errCount)
+			}
+			rs := models.ReminderSetting{}
+			err := rs.DeleteById(tx, tt.in);
+			assert.Error(t, err)
+			recordCountAfter, errCount := models.CountReminderSetting(tx)
+			if errCount != nil {
+				t.Errorf("reminder setting count err %#v", errCount)
+			}
+			// id=0指定エラー時
+			// レコードが減少していない
+			assert.Equal(t, recordCountBefore, recordCountAfter)
+			return err
+		})
+		assert.Error(t, err)
 	}
 }

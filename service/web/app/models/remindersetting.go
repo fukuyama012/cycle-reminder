@@ -14,7 +14,7 @@ type ReminderSetting struct {
 	NotifyTitle string `gorm:"size:255;not null;" validate:"max=100"`
 	NotifyText string `gorm:"Type:text;not null;" validate:"required,max=1000"`
 	CycleDays uint `gorm:"Type:smallint(5) unsigned;not null;" validate:"required,numeric,min=1,max=365"`
-	ReminderSchedule ReminderSchedule
+	//ReminderSchedule ReminderSchedule
 	ReminderLogs []ReminderLog
 }
 
