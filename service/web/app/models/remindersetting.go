@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/jinzhu/gorm"
 	"gopkg.in/go-playground/validator.v9"
+	"log"
 )
 
 type ReminderSetting struct {
@@ -23,35 +24,21 @@ func (rSet *ReminderSetting) validate() error {
 }
 
 // 新規リマインダー作成
-func CreateReminderSetting(db *gorm.DB, user User, name, notifyTitle, notifyText string, cycleDays, number uint) (*ReminderSetting, error) {
-	rSet := ReminderSetting{
-		UserID: user.ID,
-		Number: number,
-		Name: name,
-		NotifyTitle: notifyTitle,
-		NotifyText: notifyText,
-		CycleDays: cycleDays,
+func CreateReminderSetting(user User, name, notifyTitle, notifyText string, cycleDays uint) (*ReminderSetting, error)  {
+	data, err := TransactAndReceiveData(DB, func(tx *gorm.DB) (i interface{}, e error) {
+		// トランザクション内でnumber値を自動採番
+		number, err := getReminderSettingsNextNumberForCreate(tx)
+		if err != nil {
+			return nil, err
+		}
+		i, e = createReminderSetting(tx, user, name, notifyTitle, notifyText, cycleDays, number)
+		return
+	})
+	rSet, ok := data.(*ReminderSetting)
+	if !ok {
+		log.Panicf("cant cast ReminderSetting %#v\n", err)
 	}
-	// validator.v9
-	if err := rSet.validate(); err != nil {
-		return nil, err
-	}
-	if err := db.Create(&rSet).Error; err != nil {
-		return nil, err
-	}
-	return &rSet, nil
-}
-
-// インサート用に次点のnumber値を取得
-func GetReminderSettingsNextNumberForCreate(db *gorm.DB) (uint, error) {
-	type Result struct {
-		Max uint
-	}
-	var result Result
-	if err := db.Table("reminder_settings").Select("MAX(`number`) AS `max`").Scan(&result).Error; err != nil {
-		return 0, err
-	}
-	return result.Max + uint(1), nil
+	return rSet, err
 }
 
 // リマインダー数カウント
@@ -108,3 +95,34 @@ func (rs *ReminderSetting) DeleteById(db *gorm.DB, id uint) error {
 	return db.Unscoped().Delete(&rs).Error
 }
 
+// 新規リマインダー作成
+func createReminderSetting(db *gorm.DB, user User, name, notifyTitle, notifyText string, cycleDays, number uint) (*ReminderSetting, error) {
+	rSet := ReminderSetting{
+		UserID: user.ID,
+		Number: number,
+		Name: name,
+		NotifyTitle: notifyTitle,
+		NotifyText: notifyText,
+		CycleDays: cycleDays,
+	}
+	// validator.v9
+	if err := rSet.validate(); err != nil {
+		return nil, err
+	}
+	if err := db.Create(&rSet).Error; err != nil {
+		return nil, err
+	}
+	return &rSet, nil
+}
+
+// インサート用に次点のnumber値を取得
+func getReminderSettingsNextNumberForCreate(db *gorm.DB) (uint, error) {
+	type Result struct {
+		Max uint
+	}
+	var result Result
+	if err := db.Table("reminder_settings").Select("MAX(`number`) AS `max`").Scan(&result).Error; err != nil {
+		return 0, err
+	}
+	return result.Max + uint(1), nil
+}

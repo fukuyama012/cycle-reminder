@@ -7,7 +7,6 @@ import (
 	"testing"
 )
 
-// 新規ユーザー作成
 func TestCreateReminderSetting(t *testing.T) {
 	prepareTestDB()
 	tests := []struct {
@@ -16,19 +15,18 @@ func TestCreateReminderSetting(t *testing.T) {
 		NotifyTitle string
 		NotifyText string
 		CycleDays uint
-		Number uint
 	}{
-		{1, "test name", "test title", "test text", 1, 5},
-		{1, "test name2", "test title2", "test text2", 365, 6},
-		{1, "test name2", "", "test text2", 7, 7},
-		{2, "test name2", "title", "test text2", 7, 8},
+		{1, "test name", "test title", "test text", 1},
+		{1, "test name2", "test title2", "test text2", 365},
+		{1, "test name2", "", "test text2", 7},
+		{2, "test name2", "title", "test text2", 7},
 	}
 	for _, tt := range tests {
 		user := models.User{}
 		if err := user.GetById(models.DB, tt.UserID); err != nil {
 			t.Error(err)
 		}
-		rSet, err := models.CreateReminderSetting(models.DB, user, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays, tt.Number)
+		rSet, err := models.CreateReminderSetting(user, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays)
 		assert.Nil(t, err)
 		// リマインダーが正常に設定されている
 		assert.NotNil(t, rSet)
@@ -50,41 +48,22 @@ func TestCreateReminderSettingError(t *testing.T) {
 		NotifyTitle string
 		NotifyText string
 		CycleDays uint
-		Number uint
 	}{
-		{user2, "name", "test title", "test text", 1, 4}, // 空user
-		{user1, "", "test title", "test text", 1, 5}, // name無し
+		{user2, "name", "test title", "test text", 1}, // 空user
+		{user1, "", "test title", "test text", 1}, // name無し
 		// name 最大長超え
-		{user1, "01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "title", "test text2", 7, 6},
-		{user1, "test name", "test title", "", 365, 7}, // テキスト無し
+		{user1, "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", "title", "test text2", 7}, 
+		{user1, "test name", "test title", "", 365}, // テキスト無し
 		// タイトル最大長超え
-		{user1, "name", "01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "test text2", 7, 8},
-		{user1, "test name", "test title", "text", 0, 9}, // リマインド日数0
-		{user1, "test name", "test title", "text", 366, 10}, // リマインド日数最大値超え
-		{user1, "test name", "test title", "text", 365, 1}, // UserID-Nunberユニークキー重複
+		{user1, "name", "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", "test text2", 7},
+		{user1, "test name", "test title", "text", 0}, // リマインド日数0
+		{user1, "test name", "test title", "text", 366}, // リマインド日数最大値超え
 	}
 	for _, tt := range tests {
-		rSet, err := models.CreateReminderSetting(models.DB, tt.user, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays, tt.Number)
+		rSet, err := models.CreateReminderSetting(tt.user, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays)
 		// リマインダーが正常に設定されていない
 		assert.Error(t, err)
 		assert.Nil(t, rSet)
-	}
-}
-
-// レコードインサート用に最大値の次点numberを取得
-func TestGetReminderSettingsNextNumberForCreate(t *testing.T) {
-	prepareTestDB()
-	tests := []struct {
-		Number uint
-	}{
-		// 3レコード有る前提、変更無し時何回コールしても4
-		{4},
-		{4},
-	}
-	for _, tt := range tests {
-		number, err := models.GetReminderSettingsNextNumberForCreate(models.DB)
-		assert.Nil(t, err)
-		assert.Equal(t, tt.Number, number)
 	}
 }
 
@@ -252,27 +231,46 @@ func TestReminderSetting_UpdatesNoIdError(t *testing.T) {
 	}
 }
 
-// 削除
-// 関数単体のチェック、レコード減少チェックはトランザクション込でservices/remindersetting_test.goで実施
-func TestReminderSetting_DeleteById(t *testing.T) {
+// 削除(チェックの整合性の為トランザクション化)
+func TestReminderSetting_DeleteByIdTransaction(t *testing.T) {
 	prepareTestDB()
 	tests := []struct {
 		in  uint
+		out bool
 	}{
-		{1},
-		{2},
-		{9999},
+		{1, true},
+		{2, true},
+		{9999, false},
 	}
 	for _, tt := range tests {
-		rs := models.ReminderSetting{}
-		err := rs.DeleteById(models.DB, tt.in);
+		err := models.Transact(models.DB, func(tx *gorm.DB) error {
+			recordCountBefore, errCount := models.CountReminderSetting(tx)
+			if errCount != nil {
+				return errCount
+			}
+			rs := models.ReminderSetting{}
+			err := rs.DeleteById(tx, tt.in);
+			assert.Nil(t, err)
+			recordCountAfter, errCount := models.CountReminderSetting(tx)
+			if errCount != nil {
+				return errCount
+			}
+			if tt.out {
+				// レコードが減少している
+				assert.Equal(t, recordCountBefore - 1, recordCountAfter)
+			} else {
+				// 存在しないID
+				// レコードが減少していない
+				assert.Equal(t, recordCountBefore, recordCountAfter)
+			}
+			return nil
+		})
 		assert.Nil(t, err)
 	}
 }
 
-// 削除 id=0の場合は個別エラー（適切にエラー処理しないと全て削除される）
-// 関数単体のチェック、レコード減少チェックはトランザクション込でservices/remindersetting_test.goで実施
-func TestReminderSetting_DeleteByIdZeroValueError(t *testing.T) {
+// 削除エラー(チェックの整合性の為トランザクション化)
+func TestReminderSetting_DeleteByIdErrorTransaction(t *testing.T) {
 	prepareTestDB()
 	tests := []struct {
 		in  uint
@@ -280,8 +278,23 @@ func TestReminderSetting_DeleteByIdZeroValueError(t *testing.T) {
 		{0},
 	}
 	for _, tt := range tests {
-		rs := models.ReminderSetting{}
-		err := rs.DeleteById(models.DB, tt.in);
+		err := models.Transact(models.DB, func(tx *gorm.DB) error {
+			recordCountBefore, errCount := models.CountReminderSetting(tx)
+			if errCount != nil {
+				t.Errorf("reminder setting count err %#v", errCount)
+			}
+			rs := models.ReminderSetting{}
+			err := rs.DeleteById(tx, tt.in);
+			assert.Error(t, err)
+			recordCountAfter, errCount := models.CountReminderSetting(tx)
+			if errCount != nil {
+				t.Errorf("reminder setting count err %#v", errCount)
+			}
+			// id=0指定エラー時
+			// レコードが減少していない
+			assert.Equal(t, recordCountBefore, recordCountAfter)
+			return err
+		})
 		assert.Error(t, err)
 	}
 }

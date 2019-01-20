@@ -131,35 +131,70 @@ func TestUser_GetByEmail(t *testing.T) {
 	}
 }
 
-// ユーザー削除
-// エラー吐かない事だけチェック、レコード減少チェックはトランザクション込でservices/user_test.goで実施
-func TestUser_DeleteUserById(t *testing.T) {
+// ユーザー削除(チェックの整合性の為トランザクション化)
+func TestUser_DeleteUserByIdTransaction(t *testing.T) {
 	tests := []struct {
 		in  uint
+		out bool
 	}{
-		{1},
-		{2},
-		{9999},
+		{1, true},
+		{2, true},
+		{9999, false},
 	}
 	for _, tt := range tests {
-		user := models.User{}
-		err := user.DeleteById(models.DB, tt.in);
+		err := models.Transact(models.DB, func(tx *gorm.DB) error {
+			recordCountBefore, errCount := models.CountUser(tx)
+			if errCount != nil {
+				return errCount
+			}
+			user := models.User{}
+			err := user.DeleteById(tx, tt.in);
+			if err != nil {
+				return err
+			}
+			recordCountAfter, errCount := models.CountUser(tx)
+			if errCount != nil {
+				return errCount
+			}
+			if tt.out {
+				// レコードが減少している
+				assert.Equal(t, recordCountBefore - 1, recordCountAfter)
+			} else {
+				// 存在しないユーザー
+				// レコードが減少していない
+				assert.Equal(t, recordCountBefore, recordCountAfter)
+			}
+			return nil
+		})
 		assert.Nil(t, err)
 	}
 }
 
-// ユーザー削除 id=0の場合は個別エラー（適切にエラー処理しないと全て削除される）
-// 関数単体のチェック、レコード減少チェックはトランザクション込でservices/user_test.goで実施
-func TestUser_DeleteUserByIdZeroValueError(t *testing.T) {
-	prepareTestDB()
+// ユーザー削除エラー(チェックの整合性の為トランザクション化)
+func TestUser_DeleteUserByIdErrorTransaction(t *testing.T) {
 	tests := []struct {
 		in  uint
 	}{
-		{0},// id=0指定エラー時
+		{0}, // ID指定が不正
 	}
 	for _, tt := range tests {
-		user := models.User{}
-		err := user.DeleteById(models.DB, tt.in);
+		err := models.Transact(models.DB, func(tx *gorm.DB) error {
+			recordCountBefore, errCount := models.CountUser(tx)
+			if errCount != nil {
+				return errCount
+			}
+			user := models.User{}
+			err := user.DeleteById(tx, tt.in);
+			assert.Error(t, err)
+			recordCountAfter, errCount := models.CountUser(tx)
+			if errCount != nil {
+				return errCount
+			}
+			// id=0指定エラー時
+			// レコードが減少していない
+			assert.Equal(t, recordCountBefore, recordCountAfter)
+			return err
+		})
 		assert.Error(t, err)
 	}
 }
