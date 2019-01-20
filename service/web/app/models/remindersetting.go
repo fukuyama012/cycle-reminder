@@ -103,7 +103,7 @@ func (rSet *ReminderSetting) GetById(db *gorm.DB, id uint) error {
 }
 
 // 起点日付＋通知間隔日数で日付を算出する 
-func (rSet *ReminderSetting) calculateNotifyDate(basisDate time.Time) time.Time {
+func (rSet *ReminderSetting) CalculateNotifyDate(basisDate time.Time) time.Time {
 	return basisDate.AddDate(0, 0, int(rSet.CycleDays))
 }
 
