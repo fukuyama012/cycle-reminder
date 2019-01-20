@@ -16,7 +16,7 @@
   name: name2
   notify_title: notify-title2
   notify_text: notify-text2
-  cycle_days: 100
+  cycle_days: 30
   
 - id: 3
   created_at: RAW=NOW()

@@ -20,9 +20,9 @@ func TestCreateReminderSchedule(t *testing.T) {
 		NotifyDate time.Time
 		NotifyDateString string
 	}{
-		{1, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()), "2018-01-01"},
-		{2, time.Date(2018, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), "2018-12-31"},
-		{3, time.Date(9999, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), "9999-12-31"},
+		{1, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()), "2018-01-08"},// 7日後
+		{2, time.Date(2018, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), "2019-01-30"},// 30日後
+		{3, time.Date(9998, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), "9999-01-01"},// 1日後
 	}
 	for _, tt := range tests {
 		rSet := models.ReminderSetting{}

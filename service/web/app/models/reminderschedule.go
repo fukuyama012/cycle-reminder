@@ -37,10 +37,10 @@ func isDateFormat(fl validator.FieldLevel) bool {
 }
 
 // 新規リマインダー予定作成
-func CreateReminderSchedule(db *gorm.DB, rSet ReminderSetting, notifyDate time.Time) (*ReminderSchedule, error) {
+func CreateReminderSchedule(db *gorm.DB, rSet ReminderSetting, basisDate time.Time) (*ReminderSchedule, error) {
 	rSch := ReminderSchedule{
 		ReminderSettingID: rSet.ID,
-		NotifyDate: notifyDate,
+		NotifyDate: rSet.calculateNotifyDate(basisDate), // 起点日付から通知間隔日数を利用し計算
 	}
 	// validator.v9
 	if err := rSch.validate(); err != nil {

@@ -26,7 +26,7 @@ func TestCreateReminderSetting(t *testing.T) {
 		if err := user.GetById(models.DB, tt.UserID); err != nil {
 			t.Error(err)
 		}
-		rSet, err := models.CreateReminderSetting(user, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays)
+		rSet, err := models.CreateReminderSettingWithNumbering(user, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays)
 		assert.Nil(t, err)
 		// リマインダーが正常に設定されている
 		assert.NotNil(t, rSet)
@@ -60,7 +60,7 @@ func TestCreateReminderSettingError(t *testing.T) {
 		{user1, "test name", "test title", "text", 366}, // リマインド日数最大値超え
 	}
 	for _, tt := range tests {
-		rSet, err := models.CreateReminderSetting(tt.user, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays)
+		rSet, err := models.CreateReminderSettingWithNumbering(tt.user, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays)
 		// リマインダーが正常に設定されていない
 		assert.Error(t, err)
 		assert.Nil(t, rSet)
@@ -121,7 +121,7 @@ func TestReminderSetting_GetById(t *testing.T) {
 		CycleDays uint
 	}{
 		{1, "name", 7},
-		{2, "name2", 100},
+		{2, "name2", 30},
 		{3, "name3", 1},
 	}
 	for _, tt := range tests {
