@@ -22,6 +22,14 @@ type ReminderDetail struct {
 	NotifyDate time.Time
 }
 
+// NotifyDetail 通知内容詳細
+type NotifyDetail struct {
+	Email string
+	ReminderSettingID uint
+	NotifyTitle string
+	NotifyText string
+}
+
 // CreateReminderSettingWithRelation リマインド設定と紐付くリマインド予定を作成
 // basisDate  起点日付　＊基本的にはtime.Now()を指定する事になる
 func CreateReminderSettingWithRelation(userID uint, name, notifyTitle, notifyText string, cycleDays uint, basisDate time.Time) (*models.ReminderSetting, error)  {
@@ -69,6 +77,20 @@ func GetReminderListByUser(user models.User, limit, offset int) ([]ReminderDetai
 		Limit(limit).Offset(offset).
 		Scan(&result).Error; err != nil {
 			return nil, err
+	}
+	return result, nil
+}
+
+// GetReminderSchedulesReachedNotifyDate 通知日付に達した全リマインド予定の通知内容取得
+func GetRemindersReachedNotifyDate(db *gorm.DB, targetDate time.Time, limit, offset int) ([]NotifyDetail, error) {
+	var result []NotifyDetail
+	if err := db.Table("users").Select("users.email, reminder_schedules.reminder_setting_id, reminder_settings.notify_title, reminder_settings.notify_text").
+		Joins("LEFT JOIN reminder_settings ON users.id = reminder_settings.user_id").
+		Joins("LEFT JOIN reminder_schedules ON reminder_settings.id = reminder_schedules.reminder_setting_id").
+		Where("reminder_schedules.notify_date <= ?", targetDate.Format("2006-01-02")).
+		Limit(limit).Offset(offset).
+		Scan(&result).Error; err != nil {
+		return nil, err
 	}
 	return result, nil
 }

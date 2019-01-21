@@ -152,6 +152,57 @@ func TestGetReminderListByUserEmptyUser(t *testing.T) {
 	assert.Nil(t, reminderList)
 }
 
+// GetReminderSchedulesReachedNotifyDate 通知日付に達した全リマインド予定の通知内容取得
+func TestGetRemindersReachedNotifyDate(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		OutLen int
+		Email string
+		TargetDate time.Time
+		Limit int
+		Offset int
+	}{
+		// limit, offset 別に正常系テスト
+		{1, "test1@example.com", time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()), 10, 0},
+		{1, "test1@example.com", time.Date(2019, time.February, 27, 0, 0, 0, 0, models.GetJSTLocation()), 10, 0},
+		{2, "test1@example.com",  time.Date(2019, time.February, 28, 0, 0, 0, 0, models.GetJSTLocation()), 10, 0},
+		{2, "test1@example.com",  time.Date(2020, time.December, 30, 0, 0, 0, 0, models.GetJSTLocation()), 10, 0},
+		{3, "test1@example.com",  time.Date(2020, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), 10, 0},
+		// limit変化
+		{2, "test1@example.com",  time.Date(2020, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), 2, 0},
+		{1, "test1@example.com",  time.Date(2020, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), 1, 0},
+		// offset変化
+		{2, "test1@example.com",  time.Date(2020, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), 10, 1},
+		{1, "test2@example.com",  time.Date(2020, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), 10, 2},
+	}
+	for _, tt := range tests {
+		reminderList, err := services.GetRemindersReachedNotifyDate(models.DB, tt.TargetDate, tt.Limit, tt.Offset)
+		assert.Nil(t, err)
+		// limitとoffsetの兼ね合いで最大数決まる
+		assert.Equal(t, tt.OutLen, len(reminderList))
+		assert.Equal(t, tt.Email, reminderList[0].Email)
+	}
+}
+
+// GetReminderListByUser ユーザー情報からリマインド一覧取得
+func TestGetRemindersReachedNotifyDateNotFound(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		OutLen int
+		TargetDate time.Time
+		Limit int
+		Offset int
+	}{
+		// 該当なし
+		{0, time.Date(2017, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), 10, 0},
+	}
+	for _, tt := range tests {
+		reminderList, err := services.GetRemindersReachedNotifyDate(models.DB, tt.TargetDate, tt.Limit, tt.Offset)
+		assert.Nil(t, err)
+		assert.Equal(t, tt.OutLen, len(reminderList))
+	}
+}
+
 // ResetReminderScheduleAfterNotify メール通知完了後の次回通知予定設定
 func TestResetReminderScheduleAfterNotify(t *testing.T) {
 	prepareTestDB()
