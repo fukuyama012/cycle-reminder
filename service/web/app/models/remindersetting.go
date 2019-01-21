@@ -25,14 +25,14 @@ func (rSet *ReminderSetting) validate() error {
 }
 
 // 新規リマインダー作成
-func CreateReminderSettingWithNumbering(user User, name, notifyTitle, notifyText string, cycleDays uint) (*ReminderSetting, error)  {
+func CreateReminderSettingWithNumbering(userID uint, name, notifyTitle, notifyText string, cycleDays uint) (*ReminderSetting, error)  {
 	data, err := TransactAndReceiveData(DB, func(tx *gorm.DB) (i interface{}, e error) {
 		// トランザクション内でnumber値を自動採番
 		number, err := GetReminderSettingsNextNumberForCreate(tx)
 		if err != nil {
 			return nil, err
 		}
-		i, e = CreateReminderSetting(tx, user, name, notifyTitle, notifyText, cycleDays, number)
+		i, e = CreateReminderSetting(tx, userID, name, notifyTitle, notifyText, cycleDays, number)
 		return
 	})
 	rSet, ok := data.(*ReminderSetting)
@@ -43,9 +43,9 @@ func CreateReminderSettingWithNumbering(user User, name, notifyTitle, notifyText
 }
 
 // 新規リマインダー作成
-func CreateReminderSetting(db *gorm.DB, user User, name, notifyTitle, notifyText string, cycleDays, number uint) (*ReminderSetting, error) {
+func CreateReminderSetting(db *gorm.DB, userID uint, name, notifyTitle, notifyText string, cycleDays, number uint) (*ReminderSetting, error) {
 	rSet := ReminderSetting{
-		UserID: user.ID,
+		UserID: userID,
 		Number: number,
 		Name: name,
 		NotifyTitle: notifyTitle,

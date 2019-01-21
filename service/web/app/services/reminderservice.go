@@ -36,7 +36,7 @@ func CreateReminderSettingWithRelation(userID uint, name, notifyTitle, notifyTex
 		if err != nil {
 			return nil, err
 		}
-		rSet, errSet := models.CreateReminderSetting(tx, user, name, notifyTitle, notifyText, cycleDays, number)
+		rSet, errSet := models.CreateReminderSetting(tx, user.ID, name, notifyTitle, notifyText, cycleDays, number)
 		if errSet != nil {
 			return nil, errSet
 		}

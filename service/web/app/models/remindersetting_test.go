@@ -23,45 +23,36 @@ func TestCreateReminderSettingWithNumbering(t *testing.T) {
 		{2, "test name2", "title", "test text2", 7},
 	}
 	for _, tt := range tests {
-		user := models.User{}
-		if err := user.GetById(models.DB, tt.UserID); err != nil {
-			t.Error(err)
-		}
-		rSet, err := models.CreateReminderSettingWithNumbering(user, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays)
+		rSet, err := models.CreateReminderSettingWithNumbering(tt.UserID, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays)
 		assert.Nil(t, err)
 		// リマインダーが正常に設定されている
 		assert.NotNil(t, rSet)
-		assert.Equal(t, rSet.UserID, user.ID)
+		assert.NotEqual(t, uint(0), rSet.ID)
 	}
 }
 
 // 新規ユーザー作成 エラー
 func TestCreateReminderSettingWithNumberingError(t *testing.T) {
 	prepareTestDB()
-	user1 := models.User{}
-	if err := user1.GetById(models.DB, 1); err != nil {
-		t.Error(err)
-	}
-	user2 := models.User{}
 	tests := []struct {
-		user models.User
+		UserID uint
 		Name string
 		NotifyTitle string
 		NotifyText string
 		CycleDays uint
 	}{
-		{user2, "name", "test title", "test text", 1}, // 空user
-		{user1, "", "test title", "test text", 1}, // name無し
+		{9999, "name", "test title", "test text", 1}, // 空user
+		{1, "", "test title", "test text", 1}, // name無し
 		// name 最大長超え
-		{user1, "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", "title", "test text2", 7}, 
-		{user1, "test name", "test title", "", 365}, // テキスト無し
+		{1, "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", "title", "test text2", 7}, 
+		{1, "test name", "test title", "", 365}, // テキスト無し
 		// タイトル最大長超え
-		{user1, "name", "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", "test text2", 7},
-		{user1, "test name", "test title", "text", 0}, // リマインド日数0
-		{user1, "test name", "test title", "text", 366}, // リマインド日数最大値超え
+		{1, "name", "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", "test text2", 7},
+		{1, "test name", "test title", "text", 0}, // リマインド日数0
+		{1, "test name", "test title", "text", 366}, // リマインド日数最大値超え
 	}
 	for _, tt := range tests {
-		rSet, err := models.CreateReminderSettingWithNumbering(tt.user, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays)
+		rSet, err := models.CreateReminderSettingWithNumbering(tt.UserID, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays)
 		// リマインダーが正常に設定されていない
 		assert.Error(t, err)
 		assert.Nil(t, rSet)
@@ -84,46 +75,37 @@ func TestCreateReminderSetting(t *testing.T) {
 		{2, "test name2", "title", "test text2", 7, 8},
 	}
 	for _, tt := range tests {
-		user := models.User{}
-		if err := user.GetById(models.DB, tt.UserID); err != nil {
-			t.Error(err)
-		}
-		rSet, err := models.CreateReminderSetting(models.DB, user, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays, tt.Number)
+		rSet, err := models.CreateReminderSetting(models.DB, tt.UserID, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays, tt.Number)
 		assert.Nil(t, err)
 		// リマインダーが正常に設定されている
 		assert.NotNil(t, rSet)
-		assert.Equal(t, rSet.UserID, user.ID)
+		assert.NotEqual(t, uint(0), rSet.ID)
 	}
 }
 
 // 新規ユーザー作成 エラー
 func TestCreateReminderSettingError(t *testing.T) {
 	prepareTestDB()
-	user1 := models.User{}
-	if err := user1.GetById(models.DB, 1); err != nil {
-		t.Error(err)
-	}
-	user2 := models.User{}
 	tests := []struct {
-		user models.User
+		UserID uint
 		Name string
 		NotifyTitle string
 		NotifyText string
 		CycleDays uint
 		Number uint
 	}{
-		{user2, "name", "test title", "test text", 1, 5}, // 空user
-		{user1, "", "test title", "test text", 1, 6}, // name無し
+		{9999, "name", "test title", "test text", 1, 5}, // 空user
+		{1, "", "test title", "test text", 1, 6}, // name無し
 		// name 最大長超え
-		{user1, "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", "title", "test text2", 7, 7},
-		{user1, "test name", "test title", "", 365, 8}, // テキスト無し
+		{1, "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", "title", "test text2", 7, 7},
+		{1, "test name", "test title", "", 365, 8}, // テキスト無し
 		// タイトル最大長超え
-		{user1, "name", "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", "test text2", 7, 9},
-		{user1, "test name", "test title", "text", 0, 10}, // リマインド日数0
-		{user1, "test name", "test title", "text", 366, 11}, // リマインド日数最大値超え
+		{1, "name", "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", "test text2", 7, 9},
+		{1, "test name", "test title", "text", 0, 10}, // リマインド日数0
+		{1, "test name", "test title", "text", 366, 11}, // リマインド日数最大値超え
 	}
 	for _, tt := range tests {
-		rSet, err := models.CreateReminderSetting(models.DB, tt.user, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays, tt.Number)
+		rSet, err := models.CreateReminderSetting(models.DB, tt.UserID, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays, tt.Number)
 		// リマインダーが正常に設定されていない
 		assert.Error(t, err)
 		assert.Nil(t, rSet)
