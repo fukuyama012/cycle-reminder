@@ -85,3 +85,59 @@ func TestCreateReminderSettingWithRelationError(t *testing.T) {
 		assert.Nil(t, rSet)
 	}
 }
+
+// GetReminderListByUser ユーザー情報からリマインド一覧取得
+func TestGetReminderListByUser(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		UserID uint
+		Name string
+		CycleDays uint
+		NotifyDate time.Time
+	}{
+		{1, "name", 7, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation())},
+		{2, "name3", 1, time.Date(2019, time.February, 28, 0, 0, 0, 0, models.GetJSTLocation())},
+	}
+	for _, tt := range tests {
+		user := models.User{}
+		err := user.GetById(models.DB, tt.UserID)
+		assert.Nil(t, err)
+
+		reminderList, errList := services.GetReminderListByUser(user)
+		assert.Nil(t, errList)
+		assert.Equal(t, tt.UserID, reminderList[0].UserID)
+		assert.Equal(t, tt.Name, reminderList[0].Name)
+		assert.Equal(t, tt.CycleDays, reminderList[0].CycleDays)
+		assert.Equal(t, tt.NotifyDate, reminderList[0].NotifyDate)
+	}
+}
+
+// GetReminderListByUser ユーザー情報からリマインド一覧取得
+func TestGetReminderListByUserNotExistsUser(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		UserID uint
+	}{
+		{99999},
+	}
+	for _, tt := range tests {
+		user := models.User{}
+		err := user.GetById(models.DB, tt.UserID)
+		assert.Error(t, err)
+
+		reminderList, errList := services.GetReminderListByUser(user)
+		assert.Nil(t, errList)
+		// 存在しないUserで研削した場合は空
+		assert.Equal(t, 0, len(reminderList))
+	}
+}
+
+// GetReminderListByUser ユーザー情報からリマインド一覧取得エラー
+func TestGetReminderListByUserEmptyUser(t *testing.T) {
+	prepareTestDB()
+	user := models.User{}
+	// 空User時はエラー
+	reminderList, errList := services.GetReminderListByUser(user)
+	assert.Error(t, errList)
+	assert.Nil(t, reminderList)
+}
