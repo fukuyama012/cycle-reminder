@@ -54,6 +54,27 @@ func TestCreateReminderScheduleError(t *testing.T) {
 	}
 }
 
+// GetReminderSchedulesBefore 通知日付に達した全リマインド予定取得
+func TestGetReminderSchedulesReachedNotifyDate(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		CountRecord int
+		TargetDate time.Time
+	}{
+		{0, time.Date(2017, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation())},
+		{1, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation())},
+		{1, time.Date(2019, time.February, 27, 0, 0, 0, 0, models.GetJSTLocation())},
+		{2, time.Date(2019, time.February, 28, 0, 0, 0, 0, models.GetJSTLocation())},
+		{2, time.Date(2020, time.December, 30, 0, 0, 0, 0, models.GetJSTLocation())},
+		{3, time.Date(2020, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation())},
+	}
+	for _, tt := range tests {
+		rSchedules, err := models.GetReminderSchedulesReachedNotifyDate(models.DB, tt.TargetDate)
+		assert.Nil(t, err)
+		assert.Equal(t, tt.CountRecord, len(rSchedules))
+	}
+}
+
 // リレーション情報で検索
 func TestReminderSchedule_GetByReminderSetting(t *testing.T) {
 	prepareTestDB()

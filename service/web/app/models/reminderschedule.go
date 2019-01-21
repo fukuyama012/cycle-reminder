@@ -60,6 +60,15 @@ func CountReminderSchedule(db *gorm.DB) (int, error) {
 	return count, err
 }
 
+// GetReminderSchedulesBefore 通知日付に達した全リマインド予定取得
+func GetReminderSchedulesReachedNotifyDate(db *gorm.DB, targetDate time.Time) ([]ReminderSchedule, error) {
+	var rSchedules []ReminderSchedule
+	if err := db.Where("notify_date <= ?", targetDate.Format("2006-01-02")).Find(&rSchedules).Error; err != nil {
+		return nil, err
+	}
+	return rSchedules, nil
+}
+
 // GetByReminderSetting リマインド設定（ユニークキー）で検索
 func (rSch *ReminderSchedule) GetByReminderSetting(db *gorm.DB, rSet ReminderSetting) error {
 	if err := db.Where("reminder_setting_id = ?", rSet.ID).First(&rSch).Error; err != nil {
