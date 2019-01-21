@@ -25,7 +25,7 @@ func setUpBefore()  {
 }
 
 func prepareFixtures()  {
-	fixtures_, err := testfixtures.NewFolder(models.DB.DB(), &testfixtures.MySQL{}, "../../tests/fixtures")
+	fixtures_, err := testfixtures.NewFolder(models.DB.DB(), &testfixtures.MySQL{}, "../../tests/fixtures/models")
 	if err != nil {
 		log.Fatal(err)
 	}

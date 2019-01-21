@@ -1,0 +1,14 @@
+- id: 1
+  created_at: RAW=NOW()
+  updated_at: RAW=NOW()
+  email: test1@example.com
+
+- id: 2
+  created_at: RAW=NOW()
+  updated_at: RAW=NOW()
+  email: test2@example.com
+  
+- id: 3
+  created_at: RAW=NOW()
+  updated_at: RAW=NOW()
+  email: test3@example.com

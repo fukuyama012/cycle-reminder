@@ -94,17 +94,30 @@ func TestGetReminderListByUser(t *testing.T) {
 		Name string
 		CycleDays uint
 		NotifyDate time.Time
+		Limit int
+		Offset int
+		OutLen int
 	}{
-		{1, "name", 7, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation())},
-		{2, "name3", 1, time.Date(2019, time.February, 28, 0, 0, 0, 0, models.GetJSTLocation())},
+		// limit, offset 別に正常系テスト
+		{1, "name", 7, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()), 1, 0, 1},
+		{1, "name", 7, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()), 2, 0, 2},
+		{1, "name", 7, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()), 3, 0, 3},
+		{1, "name2", 30, time.Date(2020, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), 3, 1, 2},
+		{1, "name2", 30, time.Date(2020, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), 2, 1, 2},
+		{1, "name2", 30, time.Date(2020, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), 1, 1, 1},
+		{1, "name3", 60, time.Date(2099, time.July, 15, 0, 0, 0, 0, models.GetJSTLocation()), 3, 2, 1},
+		{1, "name3", 60, time.Date(2099, time.July, 15, 0, 0, 0, 0, models.GetJSTLocation()), 2, 2, 1},
+		{1, "name3", 60, time.Date(2099, time.July, 15, 0, 0, 0, 0, models.GetJSTLocation()), 1, 2, 1},
 	}
 	for _, tt := range tests {
 		user := models.User{}
 		err := user.GetById(models.DB, tt.UserID)
 		assert.Nil(t, err)
 
-		reminderList, errList := services.GetReminderListByUser(user)
+		reminderList, errList := services.GetReminderListByUser(user, tt.Limit, tt.Offset)
 		assert.Nil(t, errList)
+		// limitとoffsetの兼ね合いで最大数決まる
+		assert.Equal(t, tt.OutLen, len(reminderList))
 		assert.Equal(t, tt.UserID, reminderList[0].UserID)
 		assert.Equal(t, tt.Name, reminderList[0].Name)
 		assert.Equal(t, tt.CycleDays, reminderList[0].CycleDays)
@@ -117,15 +130,17 @@ func TestGetReminderListByUserNotExistsUser(t *testing.T) {
 	prepareTestDB()
 	tests := []struct {
 		UserID uint
+		Limit int
+		Offset int
 	}{
-		{99999},
+		{99999, 1, 0},
 	}
 	for _, tt := range tests {
 		user := models.User{}
 		err := user.GetById(models.DB, tt.UserID)
 		assert.Error(t, err)
 
-		reminderList, errList := services.GetReminderListByUser(user)
+		reminderList, errList := services.GetReminderListByUser(user, tt.Limit, tt.Offset)
 		assert.Nil(t, errList)
 		// 存在しないUserで研削した場合は空
 		assert.Equal(t, 0, len(reminderList))
@@ -137,7 +152,7 @@ func TestGetReminderListByUserEmptyUser(t *testing.T) {
 	prepareTestDB()
 	user := models.User{}
 	// 空User時はエラー
-	reminderList, errList := services.GetReminderListByUser(user)
+	reminderList, errList := services.GetReminderListByUser(user, 1, 0)
 	assert.Error(t, errList)
 	assert.Nil(t, reminderList)
 }

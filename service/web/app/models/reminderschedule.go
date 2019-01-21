@@ -85,6 +85,7 @@ func (rSch *ReminderSchedule) Updates(db *gorm.DB, notifyDate time.Time) error {
 }
 
 // UpdateNotifyDateDaysAfterBasis 通知日付を指定日時から指定日数後に変更する
+// basisDate  起点日付　＊基本的にはtime.Now()を指定する事になる
 func (rSch *ReminderSchedule) UpdateNotifyDateDaysAfterBasis(db *gorm.DB, basisDate time.Time, daysAfter uint) error {
 	return rSch.Updates(db, basisDate.AddDate(0, 0, int(daysAfter)))
 }

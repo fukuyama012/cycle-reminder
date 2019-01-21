@@ -23,6 +23,7 @@ type ReminderDetail struct {
 }
 
 // CreateReminderSettingWithRelation リマインド設定と紐付くリマインド予定を作成
+// basisDate  起点日付　＊基本的にはtime.Now()を指定する事になる
 func CreateReminderSettingWithRelation(user models.User, name, notifyTitle, notifyText string, cycleDays uint, basisDate time.Time) (*models.ReminderSetting, error)  {
 	data, err := models.TransactAndReceiveData(models.DB, func(tx *gorm.DB) (interface{}, error) {
 		// トランザクション内でnumber値を自動採番
@@ -45,13 +46,13 @@ func CreateReminderSettingWithRelation(user models.User, name, notifyTitle, noti
 	}
 	rSet, ok := data.(*models.ReminderSetting)
 	if !ok {
-		log.Panicf("cant cast ReminderSetting %#v\n", err)
+		log.Panicf("cant cast ReminderSetting %#v\n", data)
 	}
-	return rSet, err
+	return rSet, nil
 }
 
 // GetReminderListByUser ユーザー情報からリマインド一覧取得
-func GetReminderListByUser(user models.User) ([]ReminderDetail, error) {
+func GetReminderListByUser(user models.User, limit, offset int) ([]ReminderDetail, error) {
 	if user.ID == uint(0) {
 		return nil, errors.New("not exists userID, GetReminderListByUser")
 	}
@@ -59,6 +60,7 @@ func GetReminderListByUser(user models.User) ([]ReminderDetail, error) {
 	if err := models.DB.Table("reminder_settings").Select("reminder_settings.*, reminder_schedules.notify_date").
 		Joins("LEFT JOIN reminder_schedules ON reminder_settings.id = reminder_schedules.reminder_setting_id").
 		Where("user_id = ?", user.ID).
+		Limit(limit).Offset(offset).
 		Scan(&result).Error; err != nil {
 			return nil, err
 	}
