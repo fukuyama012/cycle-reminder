@@ -40,7 +40,15 @@ jobs:
           name: Wait until the db container fully set up
           command: |
             docker run --network shared \
-              jwilder/dockerize -wait tcp://db:3306 -timeout 90s -wait-retry-interval 3s 
+              jwilder/dockerize -wait tcp://db:3306 -timeout 90s -wait-retry-interval 3s
+      - run:
+          name: golint bash script cp
+          command: docker cp golint.sh web:/go/src/github.com/fukuyama012/cycle-reminder/service/web/
+          working_directory: service
+      - run:
+          name: golint bash exec
+          command: docker-compose -f docker-compose.test.yml exec web bash golint.sh
+          working_directory: service
       - run:
           name: go test
           command: docker-compose -f docker-compose.test.yml exec -T web go test ./... -v | tee go-test.out
