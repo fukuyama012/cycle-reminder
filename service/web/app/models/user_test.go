@@ -107,6 +107,23 @@ func TestUser_GetByIdNotFound(t *testing.T)  {
 	}
 }
 
+// IDで検索　エラー
+func TestUser_GetByIdError(t *testing.T)  {
+	var assertT = assert.New(t)
+	tests := []struct {
+		in  uint
+	}{
+		{0},
+	}
+	for _, tt := range tests {
+		user := models.User{}
+		err := user.GetById(models.DB, tt.in);
+		assertT.Error(err)
+		assertT.Equal("", user.Email)
+		assertT.Equal(tt.in, user.ID)
+	}
+}
+
 // Eメール検索
 func TestUser_GetByEmail(t *testing.T) {
 	tests := []struct {

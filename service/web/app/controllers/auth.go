@@ -31,7 +31,7 @@ func (c Auth) Login() revel.Result {
 	key := services.RandString(10)
 
 	c.Session[googleOauthSession] = key
-	url := services.GetAuthCodeUrlWithSessionKey(key)
+	url := services.GetAuthCodeURLWithSessionKey(key)
 	return c.Redirect(url)
 }
 
@@ -53,12 +53,12 @@ func (c Auth) Callback() revel.Result {
 		return c.Redirect(routes.App.Index())
 	}
 
-	userId, err := services.GetUserIdOrCreateUserId(oauthInfo.Email)
+	userId, err := services.GetUserIDOrCreateUserID(oauthInfo.Email)
 	if err != nil {
 		c.Log.Errorf("get or create userId, %#v", err)
 		return c.Redirect(routes.App.Index())
 	}
-	
+
 	c.Session[serviceLoginSession] = userId
 	return c.Redirect(routes.Reminders.Index())
 }

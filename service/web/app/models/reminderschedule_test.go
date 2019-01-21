@@ -22,14 +22,10 @@ func TestCreateReminderSchedule(t *testing.T) {
 	}{
 		{1, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()), "2018-01-01"},
 		{2, time.Date(2018, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), "2018-12-31"},
-		{3, time.Date(9999, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), "9999-12-31"},
+		{3, time.Date(9998, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), "9998-12-31"},
 	}
 	for _, tt := range tests {
-		rSet := models.ReminderSetting{}
-		if err := rSet.GetById(models.DB, tt.ReminderSettingID); err != nil {
-			t.Error(err)
-		}
-		rSch, err := models.CreateReminderSchedule(models.DB, rSet, tt.NotifyDate)
+		rSch, err := models.CreateReminderSchedule(models.DB, tt.ReminderSettingID, tt.NotifyDate)
 		assert.Nil(t, err)
 		// 日付が正常に設定されている
 		assert.Equal(t, tt.NotifyDateString, rSch.NotifyDate.Format("2006-01-02"))
@@ -44,18 +40,38 @@ func TestCreateReminderScheduleError(t *testing.T) {
 	if err := models.DB.Unscoped().Delete(&models.ReminderSchedule{}).Error; err != nil {
 		t.Error(err)
 	}
-	rSetEmpty := models.ReminderSetting{}
 	tests := []struct {
-		rSet models.ReminderSetting
+		ReminderSettingID uint
 		NotifyDate time.Time
 	}{
-		{rSetEmpty, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation())}, // ReminderSettingIDが不正
+		{uint(0), time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation())}, // ReminderSettingIDが不正
 	}
 	for _, tt := range tests {
-		rSch, err := models.CreateReminderSchedule(models.DB, tt.rSet, tt.NotifyDate)
+		rSch, err := models.CreateReminderSchedule(models.DB, tt.ReminderSettingID, tt.NotifyDate)
 		assert.Error(t, err)
 		// 正常に設定されていない
 		assert.Nil(t, rSch)
+	}
+}
+
+// GetReminderSchedulesBefore 通知日付に達した全リマインド予定取得
+func TestGetReminderSchedulesReachedNotifyDate(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		CountRecord int
+		TargetDate time.Time
+	}{
+		{0, time.Date(2017, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation())},
+		{1, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation())},
+		{1, time.Date(2019, time.February, 27, 0, 0, 0, 0, models.GetJSTLocation())},
+		{2, time.Date(2019, time.February, 28, 0, 0, 0, 0, models.GetJSTLocation())},
+		{2, time.Date(2020, time.December, 30, 0, 0, 0, 0, models.GetJSTLocation())},
+		{3, time.Date(2020, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation())},
+	}
+	for _, tt := range tests {
+		rSchedules, err := models.GetReminderSchedulesReachedNotifyDate(models.DB, tt.TargetDate)
+		assert.Nil(t, err)
+		assert.Equal(t, tt.CountRecord, len(rSchedules))
 	}
 }
 
@@ -142,6 +158,66 @@ func TestReminderSchedule_UpdatesError(t *testing.T) {
 			// 空情報のままレシーバーコール
 			rSch := models.ReminderSchedule{}
 			err := rSch.Updates(tx, tt.NotifyDate)
+			assert.Error(t, err)
+			assert.Equal(t, tt.NotifyDateString, rSch.NotifyDate.Format("2006-01-02"))
+			assert.Equal(t, uint(0), rSch.ID)
+			return err
+		})
+		assert.Error(t, err)
+	}
+}
+
+// 通知日時を起点日時から指定日数後に更新
+func TestReminderSchedule_UpdateNotifyDateDaysAfterBasis(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		ReminderSettingID  uint
+		BasisDate time.Time
+		DaysAfter uint
+		NotifyDateString string
+	}{
+		{1, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()), 7, "2018-01-08"},
+		{2, time.Date(2018, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), 1, "2019-01-01"},
+		{3, time.Date(9998, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), 365, "9999-12-31"},
+	}
+	for _, tt := range tests {
+		err := models.Transact(models.DB, func(tx *gorm.DB) error {
+			rSet := models.ReminderSetting{}
+			if err := rSet.GetById(tx, tt.ReminderSettingID); err != nil {
+				t.Error(err)
+			}
+
+			rSch := models.ReminderSchedule{}
+			if err := rSch.GetByReminderSetting(tx, rSet); err != nil {
+				t.Error(err)
+			}
+			err := rSch.UpdateNotifyDateDaysAfterBasis(tx, tt.BasisDate, tt.DaysAfter)
+			assert.Nil(t, err)
+			assert.Equal(t, tt.NotifyDateString, rSch.NotifyDate.Format("2006-01-02"))
+			return err
+		})
+		assert.Nil(t, err)
+	}
+}
+
+// 通知日時を起点日時から指定日数後に更新
+// 空タイプstructでレシーバーコール
+func TestReminderSchedule_UpdateNotifyDateDaysAfterBasisEmptyStruct(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		BasisDate time.Time
+		DaysAfter uint
+		NotifyDateString string
+	}{
+		{time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()), 7, "2018-01-08"},
+		{time.Date(2018, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), 1, "2019-01-01"},
+		{time.Date(9998, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), 365, "9999-12-31"},
+	}
+	for _, tt := range tests {
+		err := models.Transact(models.DB, func(tx *gorm.DB) error {
+			// 空情報のままレシーバーコール
+			rSch := models.ReminderSchedule{}
+			err := rSch.UpdateNotifyDateDaysAfterBasis(tx, tt.BasisDate, tt.DaysAfter)
 			assert.Error(t, err)
 			assert.Equal(t, tt.NotifyDateString, rSch.NotifyDate.Format("2006-01-02"))
 			assert.Equal(t, uint(0), rSch.ID)

@@ -5,9 +5,10 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
-func TestCreateReminderSetting(t *testing.T) {
+func TestCreateReminderSettingWithNumbering(t *testing.T) {
 	prepareTestDB()
 	tests := []struct {
 		UserID uint
@@ -22,49 +23,101 @@ func TestCreateReminderSetting(t *testing.T) {
 		{2, "test name2", "title", "test text2", 7},
 	}
 	for _, tt := range tests {
-		user := models.User{}
-		if err := user.GetById(models.DB, tt.UserID); err != nil {
-			t.Error(err)
-		}
-		rSet, err := models.CreateReminderSetting(user, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays)
+		rSet, err := models.CreateReminderSettingWithNumbering(tt.UserID, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays)
 		assert.Nil(t, err)
 		// リマインダーが正常に設定されている
 		assert.NotNil(t, rSet)
-		assert.Equal(t, rSet.UserID, user.ID)
+		assert.NotEqual(t, uint(0), rSet.ID)
+	}
+}
+
+// 新規ユーザー作成 エラー
+func TestCreateReminderSettingWithNumberingError(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		UserID uint
+		Name string
+		NotifyTitle string
+		NotifyText string
+		CycleDays uint
+	}{
+		{9999, "name", "test title", "test text", 1}, // 空user
+		{1, "", "test title", "test text", 1}, // name無し
+		// name 最大長超え
+		{1, "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", "title", "test text2", 7}, 
+		{1, "test name", "test title", "", 365}, // テキスト無し
+		// タイトル最大長超え
+		{1, "name", "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", "test text2", 7},
+		{1, "test name", "test title", "text", 0}, // リマインド日数0
+		{1, "test name", "test title", "text", 366}, // リマインド日数最大値超え
+	}
+	for _, tt := range tests {
+		rSet, err := models.CreateReminderSettingWithNumbering(tt.UserID, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays)
+		// リマインダーが正常に設定されていない
+		assert.Error(t, err)
+		assert.Nil(t, rSet)
+	}
+}
+
+func TestCreateReminderSetting(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		UserID uint
+		Name string
+		NotifyTitle string
+		NotifyText string
+		CycleDays uint
+		Number uint
+	}{
+		{1, "test name", "test title", "test text", 1, 5},
+		{1, "test name2", "test title2", "test text2", 365, 6},
+		{1, "test name2", "", "test text2", 7, 7},
+		{2, "test name2", "title", "test text2", 7, 8},
+	}
+	for _, tt := range tests {
+		rSet, err := models.CreateReminderSetting(models.DB, tt.UserID, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays, tt.Number)
+		assert.Nil(t, err)
+		// リマインダーが正常に設定されている
+		assert.NotNil(t, rSet)
+		assert.NotEqual(t, uint(0), rSet.ID)
 	}
 }
 
 // 新規ユーザー作成 エラー
 func TestCreateReminderSettingError(t *testing.T) {
 	prepareTestDB()
-	user1 := models.User{}
-	if err := user1.GetById(models.DB, 1); err != nil {
-		t.Error(err)
-	}
-	user2 := models.User{}
 	tests := []struct {
-		user models.User
+		UserID uint
 		Name string
 		NotifyTitle string
 		NotifyText string
 		CycleDays uint
+		Number uint
 	}{
-		{user2, "name", "test title", "test text", 1}, // 空user
-		{user1, "", "test title", "test text", 1}, // name無し
+		{9999, "name", "test title", "test text", 1, 5}, // 空user
+		{1, "", "test title", "test text", 1, 6}, // name無し
 		// name 最大長超え
-		{user1, "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", "title", "test text2", 7}, 
-		{user1, "test name", "test title", "", 365}, // テキスト無し
+		{1, "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", "title", "test text2", 7, 7},
+		{1, "test name", "test title", "", 365, 8}, // テキスト無し
 		// タイトル最大長超え
-		{user1, "name", "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", "test text2", 7},
-		{user1, "test name", "test title", "text", 0}, // リマインド日数0
-		{user1, "test name", "test title", "text", 366}, // リマインド日数最大値超え
+		{1, "name", "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", "test text2", 7, 9},
+		{1, "test name", "test title", "text", 0, 10}, // リマインド日数0
+		{1, "test name", "test title", "text", 366, 11}, // リマインド日数最大値超え
 	}
 	for _, tt := range tests {
-		rSet, err := models.CreateReminderSetting(tt.user, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays)
+		rSet, err := models.CreateReminderSetting(models.DB, tt.UserID, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays, tt.Number)
 		// リマインダーが正常に設定されていない
 		assert.Error(t, err)
 		assert.Nil(t, rSet)
 	}
+}
+
+// インサート用に次点のnumber値を取得
+func TestGetReminderSettingsNextNumberForCreate(t *testing.T) {
+	prepareTestDB()
+	number, err := models.GetReminderSettingsNextNumberForCreate(models.DB)
+	assert.Nil(t, err)
+	assert.Equal(t, uint(4), number)
 }
 
 // Userで検索
@@ -121,7 +174,7 @@ func TestReminderSetting_GetById(t *testing.T) {
 		CycleDays uint
 	}{
 		{1, "name", 7},
-		{2, "name2", 100},
+		{2, "name2", 30},
 		{3, "name3", 1},
 	}
 	for _, tt := range tests {
@@ -148,6 +201,49 @@ func TestReminderSetting_GetByIdRecordNotFound(t *testing.T) {
 		assert.Equal(t, gorm.ErrRecordNotFound, err)
 		assert.Equal(t, "", rs.NotifyTitle)
 		assert.Equal(t, tt.in, rs.ID)
+	}
+}
+
+// IDで検索　対象レコード無し
+func TestReminderSetting_GetByIdError(t *testing.T) {
+	tests := []struct {
+		in  uint
+	}{
+		{0},
+	}
+	for _, tt := range tests {
+		rs := models.ReminderSetting{}
+		err := rs.GetById(models.DB, tt.in);
+		assert.Error(t, err)
+		assert.Equal(t, "", rs.NotifyTitle)
+		assert.Equal(t, tt.in, rs.ID)
+	}
+}
+
+// 起点日付＋通知間隔日数で日付を算出する 
+func TestReminderSetting_CalculateNotifyDate(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		ID uint
+		BasisDate time.Time
+		NextNotifydate time.Time
+	}{
+		// 7日後
+		{1, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()),
+			time.Date(2018, time.January, 8, 0, 0, 0, 0, models.GetJSTLocation())},
+		// 30日後	
+		{2, time.Date(2018, time.January, 2, 0, 0, 0, 0, models.GetJSTLocation()),
+			time.Date(2018, time.February, 1, 0, 0, 0, 0, models.GetJSTLocation())},
+		// 1日後
+		{3, time.Date(2018, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()),
+			time.Date(2019, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation())},
+	}
+	for _, tt := range tests {
+		rSet := models.ReminderSetting{}
+		err := rSet.GetById(models.DB, tt.ID);
+		assert.Nil(t, err)
+		nextNotifyDate := rSet.CalculateNotifyDate(tt.BasisDate)
+		assert.Equal(t, tt.NextNotifydate, nextNotifyDate)
 	}
 }
 

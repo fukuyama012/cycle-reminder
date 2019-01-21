@@ -41,6 +41,9 @@ func CountUser(db *gorm.DB) (int, error) {
 
 // IDで検索
 func (user *User) GetById(db *gorm.DB, id uint) error {
+	if id == 0 {
+		return errors.New("id is 0, User GetById")
+	}
 	user.ID = id
 	if err := db.First(&user).Error; err != nil {
 		if gorm.IsRecordNotFoundError(err){

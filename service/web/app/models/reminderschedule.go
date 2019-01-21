@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// ReminderSchedule リマインド予定
 type ReminderSchedule struct {
 	gorm.Model
 	ReminderSettingID uint `gorm:"not null;" validate:"required,min=1"`
@@ -36,11 +37,11 @@ func isDateFormat(fl validator.FieldLevel) bool {
 	return true
 }
 
-// 新規リマインダー予定作成
-func CreateReminderSchedule(db *gorm.DB, rSet ReminderSetting, notifyDate time.Time) (*ReminderSchedule, error) {
+// CreateReminderSchedule 新規リマインダー予定作成
+func CreateReminderSchedule(db *gorm.DB, reminderSettingID uint, notifyDate time.Time) (*ReminderSchedule, error) {
 	rSch := ReminderSchedule{
-		ReminderSettingID: rSet.ID,
-		NotifyDate: notifyDate,
+		ReminderSettingID: reminderSettingID,
+		NotifyDate: notifyDate, // 起点日付から通知間隔日数を利用し計算
 	}
 	// validator.v9
 	if err := rSch.validate(); err != nil {
@@ -52,14 +53,23 @@ func CreateReminderSchedule(db *gorm.DB, rSet ReminderSetting, notifyDate time.T
 	return &rSch, nil
 }
 
-// 全数カウント
+// CountReminderSchedule 全数カウント
 func CountReminderSchedule(db *gorm.DB) (int, error) {
 	var count int
 	err := db.Unscoped().Model(&ReminderSchedule{}).Count(&count).Error
 	return count, err
 }
 
-// リマインド設定（ユニークキー）で検索
+// GetReminderSchedulesBefore 通知日付に達した全リマインド予定取得
+func GetReminderSchedulesReachedNotifyDate(db *gorm.DB, targetDate time.Time) ([]ReminderSchedule, error) {
+	var rSchedules []ReminderSchedule
+	if err := db.Where("notify_date <= ?", targetDate.Format("2006-01-02")).Find(&rSchedules).Error; err != nil {
+		return nil, err
+	}
+	return rSchedules, nil
+}
+
+// GetByReminderSetting リマインド設定（ユニークキー）で検索
 func (rSch *ReminderSchedule) GetByReminderSetting(db *gorm.DB, rSet ReminderSetting) error {
 	if err := db.Where("reminder_setting_id = ?", rSet.ID).First(&rSch).Error; err != nil {
 		if gorm.IsRecordNotFoundError(err){
@@ -70,7 +80,7 @@ func (rSch *ReminderSchedule) GetByReminderSetting(db *gorm.DB, rSet ReminderSet
 	return nil
 }
 
-// 更新
+// Updates 更新
 func (rSch *ReminderSchedule) Updates(db *gorm.DB, notifyDate time.Time) error {
 	rSch.NotifyDate = notifyDate
 	// validator.v9
@@ -83,7 +93,13 @@ func (rSch *ReminderSchedule) Updates(db *gorm.DB, notifyDate time.Time) error {
 	return nil
 }
 
-// リマインド設定（ユニークキー）で削除
+// UpdateNotifyDateDaysAfterBasis 通知日付を指定日時から指定日数後に変更する
+// basisDate  起点日付　＊基本的にはtime.Now()を指定する事になる
+func (rSch *ReminderSchedule) UpdateNotifyDateDaysAfterBasis(db *gorm.DB, basisDate time.Time, daysAfter uint) error {
+	return rSch.Updates(db, basisDate.AddDate(0, 0, int(daysAfter)))
+}
+
+// DeleteByReminderSetting リマインド設定（ユニークキー）で削除
 func (rSch *ReminderSchedule) DeleteByReminderSetting(db *gorm.DB, rSet ReminderSetting) error {
 	if rSet.ID == 0 {
 		return errors.New("cant delete ReminderSchedule, empty reminder_setting_id")

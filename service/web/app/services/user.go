@@ -5,8 +5,8 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-// 登録Eメールが有ればUserIdを取得、無ければ登録してUserIDを取得
-func GetUserIdOrCreateUserId(email string) (uint, error) {
+// GetUserIDOrCreateUserID 登録Eメールが有ればUserIdを取得、無ければ登録してUserIDを取得
+func GetUserIDOrCreateUserID(email string) (uint, error) {
 	user := models.User{}
 	err := user.GetByEmail(models.DB, email)
 	if err != nil {
@@ -20,8 +20,8 @@ func GetUserIdOrCreateUserId(email string) (uint, error) {
 	return user.ID, nil
 }
 
-// ユーザー登録チェック
-func CheckUserId(id uint) (*models.User, error) {
+// CheckUserID ユーザー登録チェック
+func CheckUserID(id uint) (*models.User, error) {
 	user := models.User{}
 	err := user.GetById(models.DB, id)
 	if err != nil {
