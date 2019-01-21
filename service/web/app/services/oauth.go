@@ -13,12 +13,13 @@ const (
 	tokenEndpoint     = "https://www.googleapis.com/oauth2/v4/token"
 )
 
-func GetAuthCodeUrlWithSessionKey(key string) string {
+// GetAuthCodeURLWithSessionKey 確認キーを渡しつつAuth接続先URL取得
+func GetAuthCodeURLWithSessionKey(key string) string {
 	oauth := getConnectConfig()
 	return oauth.AuthCodeURL(key)
 }
 
-// OAUTHにより情報を取得
+// GetOauthInfo OAUTHにより情報を取得
 func GetOauthInfo(code string) (*v2.Tokeninfo, error) {
 	oauth := getConnectConfig()
 	myContext := context.Background()
@@ -44,9 +45,9 @@ func GetOauthInfo(code string) (*v2.Tokeninfo, error) {
 	return info, nil
 }
 
-// GetConnect 接続を取得する
+// getConnectConfig 接続を取得する
 func getConnectConfig() *oauth2.Config {
-	config := &oauth2.Config{
+	return &oauth2.Config{
 		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
 		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
 		Endpoint: oauth2.Endpoint{
@@ -56,7 +57,6 @@ func getConnectConfig() *oauth2.Config {
 		Scopes:      []string{"openid", "email"},
 		RedirectURL: os.Getenv("CALL_BACK_URL") + "/auth/callback",
 	}
-	return config
 }
 
 

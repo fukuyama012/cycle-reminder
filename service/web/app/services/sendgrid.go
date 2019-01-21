@@ -9,10 +9,11 @@ import (
 )
 
 const (
-	SENDGRID_RESPONSE_STATUS_CODE_OK = 200
-	SENDGRID_RESPONSE_STATUS_CODE_ACCEPTED = 202
+	sendgridResponseStatusCodeOk       = 200
+	sendgridResponseStatusCodeAccepted = 202
 )
 
+// Message is struct
 type Message struct {
 	ToEmail string `validate:"required,email"`
 	Subject string `validate:"required,max=100"`
@@ -23,7 +24,7 @@ func (mes Message) validate() error {
 	return validator.New().Struct(mes)
 }
 
-// 送信内容バリデーションしてEメール送信
+// SendMail 送信内容バリデーションしてEメール送信
 func SendMail(toEmail, subject, content string) (*rest.Response, error) {
 	message, err := makeMessage(toEmail, subject, content)
 	if err != nil {
@@ -33,10 +34,10 @@ func SendMail(toEmail, subject, content string) (*rest.Response, error) {
 	return client.Send(message)
 }
 
-// 成功ステータスコードか？
+// IsSuccessStatusCode 成功ステータスコードか？
 func IsSuccessStatusCode(response *rest.Response) bool {
 	switch response.StatusCode {
-	case SENDGRID_RESPONSE_STATUS_CODE_OK, SENDGRID_RESPONSE_STATUS_CODE_ACCEPTED:
+	case sendgridResponseStatusCodeOk, sendgridResponseStatusCodeAccepted:
 		return true
 	}
 	return false

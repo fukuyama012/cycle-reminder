@@ -17,7 +17,7 @@ func (c Reminders) Index() revel.Result {
 		// 有効なセッション情報無ければLPへ
 		return c.Redirect(routes.App.Index())
 	}
-	user, err := services.CheckUserId(userIdSession)
+	user, err := services.CheckUserID(userIdSession)
 	if err != nil {
 		// ユーザー登録無ければLPへ
 		return c.Redirect(routes.App.Index())

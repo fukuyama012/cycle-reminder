@@ -20,7 +20,7 @@ func TestCreateReminderSettingWithRelation(t *testing.T) {
 		BasisDate time.Time
 		NextNotifyDate time.Time
 	}{
-		{1, "test name", "test title", "test text", 1, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()), 
+		{1, "test name", "test title", "test text", 1, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()),
 			time.Date(2018, time.January, 2, 0, 0, 0, 0, models.GetJSTLocation())},
 		{1, "test name2", "test title2", "test text2", 365, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()),
 			time.Date(2019, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation())},
@@ -39,7 +39,7 @@ func TestCreateReminderSettingWithRelation(t *testing.T) {
 		// リマインダーが正常に設定されている
 		assert.NotNil(t, rSet)
 		assert.Equal(t, rSet.UserID, user.ID)
-		
+
 		// リレーション情報としてリマインド予定にレコード追加されている
 		rSch := models.ReminderSchedule{}
 		errSch := rSch.GetByReminderSetting(models.DB, *rSet)
@@ -50,3 +50,38 @@ func TestCreateReminderSettingWithRelation(t *testing.T) {
 	}
 }
 
+// リマインド設定と紐付くリマインド予定を作成エラー
+func TestCreateReminderSettingWithRelationError(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		UserID uint
+		Name string
+		NotifyTitle string
+		NotifyText string
+		CycleDays uint
+		BasisDate time.Time
+		NextNotifyDate time.Time
+	}{
+		// name無し
+		{1, "", "test title", "test text", 1, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()),
+			time.Date(2018, time.January, 2, 0, 0, 0, 0, models.GetJSTLocation())},
+			//　NotifyText無し
+		{1, "test name2", "test title2", "", 365, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()),
+			time.Date(2019, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation())},
+			// User無し
+		{9999, "test name2", "", "test text2", 7, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()),
+			time.Date(2018, time.January, 8, 0, 0, 0, 0, models.GetJSTLocation())},
+			// CycleDaysが0
+		{2, "test name2", "title", "test text2", 0, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()),
+			time.Date(2018, time.February, 1, 0, 0, 0, 0, models.GetJSTLocation())},
+	}
+	for _, tt := range tests {
+		user := models.User{}
+		_ = user.GetById(models.DB, tt.UserID)
+
+		rSet, err := services.CreateReminderSettingWithRelation(user, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays, tt.BasisDate)
+		assert.Error(t, err)
+		// リマインダーが正常に設定されていない
+		assert.Nil(t, rSet)
+	}
+}
