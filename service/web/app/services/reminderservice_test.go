@@ -109,7 +109,7 @@ func TestGetReminderListByUser(t *testing.T) {
 		err := user.GetById(models.DB, tt.UserID)
 		assert.Nil(t, err)
 
-		reminderList, errList := services.GetReminderListByUser(user, tt.Limit, tt.Offset)
+		reminderList, errList := services.GetReminderListByUser(models.DB, user, tt.Limit, tt.Offset)
 		assert.Nil(t, errList)
 		// limitとoffsetの兼ね合いで最大数決まる
 		assert.Equal(t, tt.OutLen, len(reminderList))
@@ -135,7 +135,7 @@ func TestGetReminderListByUserNotExistsUser(t *testing.T) {
 		err := user.GetById(models.DB, tt.UserID)
 		assert.Error(t, err)
 
-		reminderList, errList := services.GetReminderListByUser(user, tt.Limit, tt.Offset)
+		reminderList, errList := services.GetReminderListByUser(models.DB, user, tt.Limit, tt.Offset)
 		assert.Nil(t, errList)
 		// 存在しないUserで研削した場合は空
 		assert.Equal(t, 0, len(reminderList))
@@ -147,7 +147,7 @@ func TestGetReminderListByUserEmptyUser(t *testing.T) {
 	prepareTestDB()
 	user := models.User{}
 	// 空User時はエラー
-	reminderList, errList := services.GetReminderListByUser(user, 1, 0)
+	reminderList, errList := services.GetReminderListByUser(models.DB, user, 1, 0)
 	assert.Error(t, errList)
 	assert.Nil(t, reminderList)
 }

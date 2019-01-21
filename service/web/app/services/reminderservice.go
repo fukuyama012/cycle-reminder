@@ -66,12 +66,12 @@ func CreateReminderSettingWithRelation(userID uint, name, notifyTitle, notifyTex
 }
 
 // GetReminderListByUser ユーザー情報からリマインド一覧取得
-func GetReminderListByUser(user models.User, limit, offset int) ([]ReminderDetail, error) {
+func GetReminderListByUser(db *gorm.DB, user models.User, limit, offset int) ([]ReminderDetail, error) {
 	if user.ID == uint(0) {
 		return nil, errors.New("not exists userID, GetReminderListByUser")
 	}
 	var result []ReminderDetail
-	if err := models.DB.Table("reminder_settings").Select("reminder_settings.*, reminder_schedules.notify_date").
+	if err := db.Table("reminder_settings").Select("reminder_settings.*, reminder_schedules.notify_date").
 		Joins("LEFT JOIN reminder_schedules ON reminder_settings.id = reminder_schedules.reminder_setting_id").
 		Where("user_id = ?", user.ID).
 		Limit(limit).Offset(offset).
