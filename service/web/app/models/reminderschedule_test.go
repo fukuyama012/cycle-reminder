@@ -151,6 +151,66 @@ func TestReminderSchedule_UpdatesError(t *testing.T) {
 	}
 }
 
+// 通知日時を起点日時から指定日数後に更新
+func TestReminderSchedule_UpdateNotifyDateDaysAfterBasis(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		ReminderSettingID  uint
+		BasisDate time.Time
+		DaysAfter uint
+		NotifyDateString string
+	}{
+		{1, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()), 7, "2018-01-08"},
+		{2, time.Date(2018, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), 1, "2019-01-01"},
+		{3, time.Date(9998, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), 365, "9999-12-31"},
+	}
+	for _, tt := range tests {
+		err := models.Transact(models.DB, func(tx *gorm.DB) error {
+			rSet := models.ReminderSetting{}
+			if err := rSet.GetById(tx, tt.ReminderSettingID); err != nil {
+				t.Error(err)
+			}
+
+			rSch := models.ReminderSchedule{}
+			if err := rSch.GetByReminderSetting(tx, rSet); err != nil {
+				t.Error(err)
+			}
+			err := rSch.UpdateNotifyDateDaysAfterBasis(tx, tt.BasisDate, tt.DaysAfter)
+			assert.Nil(t, err)
+			assert.Equal(t, tt.NotifyDateString, rSch.NotifyDate.Format("2006-01-02"))
+			return err
+		})
+		assert.Nil(t, err)
+	}
+}
+
+// 通知日時を起点日時から指定日数後に更新
+// 空タイプstructでレシーバーコール
+func TestReminderSchedule_UpdateNotifyDateDaysAfterBasisEmptyStruct(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		BasisDate time.Time
+		DaysAfter uint
+		NotifyDateString string
+	}{
+		{time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()), 7, "2018-01-08"},
+		{time.Date(2018, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), 1, "2019-01-01"},
+		{time.Date(9998, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), 365, "9999-12-31"},
+	}
+	for _, tt := range tests {
+		err := models.Transact(models.DB, func(tx *gorm.DB) error {
+			// 空情報のままレシーバーコール
+			rSch := models.ReminderSchedule{}
+			err := rSch.UpdateNotifyDateDaysAfterBasis(tx, tt.BasisDate, tt.DaysAfter)
+			assert.Error(t, err)
+			assert.Equal(t, tt.NotifyDateString, rSch.NotifyDate.Format("2006-01-02"))
+			assert.Equal(t, uint(0), rSch.ID)
+			return err
+		})
+		assert.Error(t, err)
+	}
+}
+
 // 削除(チェックの整合性の為トランザクション化)
 func TestReminderSchedule_DeleteByReminderSettingTransaction(t *testing.T) {
 	prepareTestDB()
