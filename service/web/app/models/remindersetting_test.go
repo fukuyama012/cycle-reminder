@@ -204,6 +204,22 @@ func TestReminderSetting_GetByIdRecordNotFound(t *testing.T) {
 	}
 }
 
+// IDで検索　対象レコード無し
+func TestReminderSetting_GetByIdError(t *testing.T) {
+	tests := []struct {
+		in  uint
+	}{
+		{0},
+	}
+	for _, tt := range tests {
+		rs := models.ReminderSetting{}
+		err := rs.GetById(models.DB, tt.in);
+		assert.Error(t, err)
+		assert.Equal(t, "", rs.NotifyTitle)
+		assert.Equal(t, tt.in, rs.ID)
+	}
+}
+
 // 起点日付＋通知間隔日数で日付を算出する 
 func TestReminderSetting_CalculateNotifyDate(t *testing.T) {
 	prepareTestDB()

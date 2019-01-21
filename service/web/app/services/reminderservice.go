@@ -72,3 +72,24 @@ func GetReminderListByUser(user models.User, limit, offset int) ([]ReminderDetai
 	}
 	return result, nil
 }
+
+// ResetReminderScheduleAfterNotify メール通知完了後の次回通知予定設定
+// basisDate  起点日付　＊基本的にはtime.Now()を指定する事になる
+func ResetReminderScheduleAfterNotify(reminderSettingID uint, basisDate time.Time) error {
+	err := models.Transact(models.DB, func(tx *gorm.DB) error {
+		rSet := models.ReminderSetting{}
+		if err := rSet.GetById(tx, reminderSettingID); err != nil {
+			return err
+		}
+		rSch := models.ReminderSchedule{}
+		if err := rSch.GetByReminderSetting(tx, rSet); err != nil {
+			return err
+		}
+		// 次回通知日付を起点日付から指定日数後に設定
+		if err := rSch.UpdateNotifyDateDaysAfterBasis(tx, basisDate, rSet.CycleDays); err != nil {
+			return err
+		}
+		return nil
+	})
+	return err
+}

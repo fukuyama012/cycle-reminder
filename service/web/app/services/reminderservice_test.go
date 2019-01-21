@@ -3,6 +3,7 @@ package services_test
 import (
 	"github.com/fukuyama012/cycle-reminder/service/web/app/models"
 	"github.com/fukuyama012/cycle-reminder/service/web/app/services"
+	"github.com/jinzhu/gorm"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -149,4 +150,63 @@ func TestGetReminderListByUserEmptyUser(t *testing.T) {
 	reminderList, errList := services.GetReminderListByUser(user, 1, 0)
 	assert.Error(t, errList)
 	assert.Nil(t, reminderList)
+}
+
+// ResetReminderScheduleAfterNotify メール通知完了後の次回通知予定設定
+func TestResetReminderScheduleAfterNotify(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		ReminderSettingID uint
+		BasisDate time.Time
+		NotifyDate string
+	}{
+		{1, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()), "2018-01-08"},// 7日後
+		{2, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()), "2018-01-31"},// 30日後
+	}
+	for _, tt := range tests {
+		err := services.ResetReminderScheduleAfterNotify(tt.ReminderSettingID, tt.BasisDate)
+		assert.Nil(t, err)
+		
+		rSet := models.ReminderSetting{}
+		errSet := rSet.GetById(models.DB, tt.ReminderSettingID)
+		assert.Nil(t, errSet)
+		// リマインド予定の次回通知日付が正しい
+		rSch := models.ReminderSchedule{}
+		errSch := rSch.GetByReminderSetting(models.DB, rSet)
+		assert.Nil(t, errSch)
+		assert.Equal(t, tt.NotifyDate, rSch.NotifyDate.Format("2006-01-02"))
+	}
+}
+
+// ResetReminderScheduleAfterNotify メール通知完了後の次回通知予定設定
+// 対象レコード無し
+func TestResetReminderScheduleAfterNotifyRecordNotFound(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		ReminderSettingID uint
+		BasisDate time.Time
+	}{
+		{99999, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation())},
+	}
+	for _, tt := range tests {
+		err := services.ResetReminderScheduleAfterNotify(tt.ReminderSettingID, tt.BasisDate)
+		assert.Error(t, err)
+		assert.Equal(t, gorm.ErrRecordNotFound, err)
+	}
+}
+
+// ResetReminderScheduleAfterNotify メール通知完了後の次回通知予定設定
+func TestResetReminderScheduleAfterNotifyError(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		ReminderSettingID uint
+		BasisDate time.Time
+	}{
+		// 無効ID指定
+		{0, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation())},
+	}
+	for _, tt := range tests {
+		err := services.ResetReminderScheduleAfterNotify(tt.ReminderSettingID, tt.BasisDate)
+		assert.Error(t, err)
+	}
 }

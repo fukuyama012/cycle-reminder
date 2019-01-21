@@ -92,6 +92,9 @@ func GetReminderSettingsByUser(db *gorm.DB, user User) ([]ReminderSetting, error
 
 // IDで検索
 func (rSet *ReminderSetting) GetById(db *gorm.DB, id uint) error {
+	if id == 0 {
+		return errors.New("id is 0, ReminderSetting GetById")
+	}
 	rSet.ID = id
 	if err := db.First(&rSet).Error; err != nil {
 		if gorm.IsRecordNotFoundError(err){
