@@ -112,16 +112,22 @@ func TestGetReminderListByUser(t *testing.T) {
 		{1, "name3", 60, time.Date(2099, time.July, 15, 0, 0, 0, 0, models.GetJSTLocation()), 2, 2, 1},
 		{1, "name3", 60, time.Date(2099, time.July, 15, 0, 0, 0, 0, models.GetJSTLocation()), 1, 2, 1},
 	}
-	for _, tt := range tests {
-		reminderList, errList := services.GetReminderListByUserID(models.DB, tt.UserID, tt.Limit, tt.Offset)
-		assert.Nil(t, errList)
-		// limitとoffsetの兼ね合いで最大数決まる
-		assert.Equal(t, tt.OutLen, len(reminderList))
-		assert.Equal(t, tt.UserID, reminderList[0].UserID)
-		assert.Equal(t, tt.Name, reminderList[0].Name)
-		assert.Equal(t, tt.CycleDays, reminderList[0].CycleDays)
-		assert.Equal(t, tt.NotifyDate, reminderList[0].NotifyDate)
-	}
+	err := models.Transact(models.DB, func(tx *gorm.DB) error {
+		for _, tt := range tests {
+			reminderList, errList := services.GetReminderListByUserID(tx, tt.UserID, tt.Limit, tt.Offset)
+			if errList != nil {
+				return errList
+			}
+			// limitとoffsetの兼ね合いで最大数決まる
+			assert.Equal(t, tt.OutLen, len(reminderList))
+			assert.Equal(t, tt.UserID, reminderList[0].UserID)
+			assert.Equal(t, tt.Name, reminderList[0].Name)
+			assert.Equal(t, tt.CycleDays, reminderList[0].CycleDays)
+			assert.Equal(t, tt.NotifyDate, reminderList[0].NotifyDate)
+		}
+		return nil
+	})
+	assert.Nil(t, err)
 }
 
 // GetReminderListByUserID ユーザー情報からリマインド一覧取得
