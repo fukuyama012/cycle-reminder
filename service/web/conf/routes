@@ -20,6 +20,7 @@ GET     /reminders/:id                          Reminders.UpdatePrepare
 POST    /reminders/:id                          Reminders.Update
 GET     /create                                 Reminders.CreatePrepare
 POST    /create                                 Reminders.Create
+POST    /reminders/delete/:id                   Reminders.Delete
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

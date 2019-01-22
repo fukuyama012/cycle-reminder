@@ -93,6 +93,18 @@ func UpdateReminderSettingByID(db *gorm.DB, id uint, name, notifyTitle, notifyTe
 	return &rSet, nil
 }
 
+// DeleteReminderSettingByID リマインダー設定削除
+func DeleteReminderSettingByID(db *gorm.DB, id uint) error {
+	rSet := models.ReminderSetting{}
+	if err := rSet.GetById(db, uint(id)); err != nil {
+		return err
+	}
+	if err := rSet.DeleteById(db, uint(id)); err != nil {
+		return err
+	}
+	return nil
+}
+
 // GetRemindersReachedNotifyDate 通知日付に達した全リマインド予定の通知内容取得
 // メール通知処理等で利用
 func GetRemindersReachedNotifyDate(db *gorm.DB, targetDate time.Time, limit, offset int) ([]NotifyDetail, error) {

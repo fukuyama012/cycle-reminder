@@ -113,8 +113,28 @@ func (c Reminders) Create() revel.Result {
 		c.Log.Errorf("Create() CreateReminderSettingWithRelation %#v", err)
 		return c.Render(result, isLogin)
 	}
-	// リスト画面へ
+	// （成功）リスト画面へ
 	return c.Redirect(routes.Reminders.Index())
+}
+
+// Delete リマインダー削除
+func (c Reminders) Delete(id int) revel.Result {
+	// loginチェック
+	userID := c.getLoginUser()
+	if userID == uint(0) {
+		// 未ログイン TOP LPへ
+		return c.Redirect(routes.App.Index())
+	}
+	
+	// TODO 後ほど整理する。。
+	isLogin := true
+	result := "削除失敗！"
+	if err := services.DeleteReminderSettingByID(services.GetDB(), uint(id)); err != nil {
+		c.Log.Errorf("Delete() DeleteReminderSettingByID %#v", err)
+		return c.Render(result, isLogin)
+	}
+	// （成功）リスト画面へ
+	return c.Redirect(routes.Reminders.Index())	
 }
 
 // getLoginUser ログインユーザー情報取得

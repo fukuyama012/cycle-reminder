@@ -23,7 +23,11 @@
         <label for="cycle_days">通知間隔</label> <span class="text-danger">*</span>
         <input type="text" class="form-control" name="cycle_days" id="cycle_days" value="{{.rSet.CycleDays}}"> 日ごとに通知
     </div><br>
-    <button type="submit" class="btn btn-danger">変更 ≫</button>
+    <button type="submit" class="btn btn-info">変更 ≫</button>
+</form>
+<br><br>
+<form action="/reminders/delete/{{.rSet.ID}}" method="post">
+    <button type="submit" class="btn btn-danger">リマインダーを削除</button>
 </form>
 
 <div class="container">
