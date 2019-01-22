@@ -17,3 +17,29 @@
     {{end}}
   </head>
   <body>
+  <nav class="navbar navbar-default ">
+      <div class="container-fluid">
+          <div class="navbar-header">
+              <a class="navbar-brand" href="./">Cycle Reminder (試用Ver)</a>
+              <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#nav_target">
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+              </button>
+          </div>
+          <div class="collapse navbar-collapse" id="nav_target">
+              <ul class="nav navbar-nav">
+              </ul>
+              <ul class="nav navbar-nav navbar-right">
+                  <li><a href="/terms">利用規約</a></li>
+                  {{if .isLogin}}
+                  <li><a href="/create">リマインダー登録</a></li>
+                  <li><a href="/reminders">リマインダーリスト</a></li>
+                  <li><a href="/logout">ログアウト</a></li>
+                  {{else}}
+                  <li><a href="/login">ログイン</a></li>
+                  {{end}}
+              </ul>
+          </div>
+      </div>
+  </nav>

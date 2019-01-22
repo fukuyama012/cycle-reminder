@@ -44,7 +44,7 @@ func TestCreateReminderSettingWithNumberingError(t *testing.T) {
 		{9999, "name", "test title", "test text", 1}, // 空user
 		{1, "", "test title", "test text", 1}, // name無し
 		// name 最大長超え
-		{1, "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", "title", "test text2", 7}, 
+		{1, "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", "title", "test text2", 7},
 		{1, "test name", "test title", "", 365}, // テキスト無し
 		// タイトル最大長超え
 		{1, "name", "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", "test text2", 7},
@@ -220,7 +220,7 @@ func TestReminderSetting_GetByIdError(t *testing.T) {
 	}
 }
 
-// 起点日付＋通知間隔日数で日付を算出する 
+// 起点日付＋通知間隔日数で日付を算出する
 func TestReminderSetting_CalculateNotifyDate(t *testing.T) {
 	prepareTestDB()
 	tests := []struct {
@@ -231,7 +231,7 @@ func TestReminderSetting_CalculateNotifyDate(t *testing.T) {
 		// 7日後
 		{1, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()),
 			time.Date(2018, time.January, 8, 0, 0, 0, 0, models.GetJSTLocation())},
-		// 30日後	
+		// 30日後
 		{2, time.Date(2018, time.January, 2, 0, 0, 0, 0, models.GetJSTLocation()),
 			time.Date(2018, time.February, 1, 0, 0, 0, 0, models.GetJSTLocation())},
 		// 1日後
@@ -338,15 +338,16 @@ func TestReminderSetting_DeleteByIdTransaction(t *testing.T) {
 		{2, true},
 		{9999, false},
 	}
-	for _, tt := range tests {
-		err := models.Transact(models.DB, func(tx *gorm.DB) error {
+	err := models.Transact(models.DB, func(tx *gorm.DB) error {
+		for _, tt := range tests {
 			recordCountBefore, errCount := models.CountReminderSetting(tx)
 			if errCount != nil {
 				return errCount
 			}
 			rs := models.ReminderSetting{}
-			err := rs.DeleteById(tx, tt.in);
-			assert.Nil(t, err)
+			if err := rs.DeleteById(tx, tt.in); err != nil {
+				return err
+			}
 			recordCountAfter, errCount := models.CountReminderSetting(tx)
 			if errCount != nil {
 				return errCount
@@ -359,10 +360,10 @@ func TestReminderSetting_DeleteByIdTransaction(t *testing.T) {
 				// レコードが減少していない
 				assert.Equal(t, recordCountBefore, recordCountAfter)
 			}
-			return nil
-		})
-		assert.Nil(t, err)
-	}
+		}
+		return nil
+	})
+	assert.Nil(t, err)
 }
 
 // 削除エラー(チェックの整合性の為トランザクション化)

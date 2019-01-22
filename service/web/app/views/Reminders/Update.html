@@ -1,0 +1,19 @@
+{{set . "title" "リマインダー変更"}}
+{{template "header.html" .}}
+
+
+<div class="page-header">
+    <h3>リマインダー変更結果</h3>
+</div>
+
+<p>{{.result}}</p>
+
+<div class="container">
+  <div class="row">
+    <div class="span6">
+      {{template "flash.html" .}}
+    </div>
+  </div>
+</div>
+
+{{template "footer.html" .}}

@@ -11,26 +11,33 @@ import (
 // 新規作成
 func TestCreateReminderSchedule(t *testing.T) {
 	prepareTestDB()
-	// ユニークキー制約でインサート出来ないのでレコード全削除しておく
-	if err := models.DB.Unscoped().Delete(&models.ReminderSchedule{}).Error; err != nil {
-		t.Error(err)
-	}
-	tests := []struct {
-		ReminderSettingID  uint
-		NotifyDate time.Time
-		NotifyDateString string
-	}{
-		{1, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()), "2018-01-01"},
-		{2, time.Date(2018, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), "2018-12-31"},
-		{3, time.Date(9998, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), "9998-12-31"},
-	}
-	for _, tt := range tests {
-		rSch, err := models.CreateReminderSchedule(models.DB, tt.ReminderSettingID, tt.NotifyDate)
-		assert.Nil(t, err)
-		// 日付が正常に設定されている
-		assert.Equal(t, tt.NotifyDateString, rSch.NotifyDate.Format("2006-01-02"))
-		assert.NotEqual(t, uint(0), rSch.ReminderSettingID)
-	}
+	err := models.Transact(models.DB, func(tx *gorm.DB) error {
+		// ユニークキー制約でインサート出来ないのでレコード全削除しておく
+		// 削除からトランザクション化しないとduplicate entryの可能性有り
+		if err := tx.Unscoped().Delete(&models.ReminderSchedule{}).Error; err != nil {
+			return err
+		}
+		tests := []struct {
+			ReminderSettingID  uint
+			NotifyDate time.Time
+			NotifyDateString string
+		}{
+			{1, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()), "2018-01-01"},
+			{2, time.Date(2018, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), "2018-12-31"},
+			{3, time.Date(9998, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), "9998-12-31"},
+		}
+		for _, tt := range tests {
+			rSch, err := models.CreateReminderSchedule(tx, tt.ReminderSettingID, tt.NotifyDate)
+			if err != nil {
+				return err
+			}
+			// 日付が正常に設定されている
+			assert.Equal(t, tt.NotifyDateString, rSch.NotifyDate.Format("2006-01-02"))
+			assert.NotEqual(t, uint(0), rSch.ID)
+		}
+		return nil
+	})
+	assert.Nil(t, err)
 }
 
 // 新規作成 バリデーションエラー
@@ -88,7 +95,7 @@ func TestReminderSchedule_GetByReminderSetting(t *testing.T) {
 		rSet := models.ReminderSetting{}
 		errSet := rSet.GetById(models.DB, tt.ReminderSettingID)
 		assert.Nil(t, errSet)
-		
+
 		rSch := models.ReminderSchedule{}
 		err := rSch.GetByReminderSetting(models.DB, rSet)
 		// 存在する

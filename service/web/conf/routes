@@ -13,8 +13,14 @@ GET     /logout                                 Auth.Logout
 GET     /auth/callback                          Auth.Callback
 
 GET     /top                                    App.Index
+GET     /terms                                  App.Terms
 
 GET     /reminders                              Reminders.Index
+GET     /reminders/:id                          Reminders.UpdatePrepare
+POST    /reminders/:id                          Reminders.Update
+GET     /create                                 Reminders.CreatePrepare
+POST    /create                                 Reminders.Create
+POST    /reminders/delete/:id                   Reminders.Delete
 
 # Ignore favicon requests
 GET     /favicon.ico                            404
