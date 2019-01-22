@@ -1,12 +1,43 @@
-{{set . "title" "Login"}}
+{{set . "title" "リマインダーリスト"}}
 {{template "header.html" .}}
 
-<div class="page-header">
-    <h3>リマインド一覧</h3>
+<div class="page-header" xmlns="http://www.w3.org/1999/html">
+    <h3>リマインダーリスト</h3>
 </div>
 
+<table class="table table-bordered table-stripe">
+<tbody>
+    <thead>
+    <tr>
+        <td>リマインダー名</td>
+        <td>通知メールタイトル</td>
+        <td>通知メール本文</td>
+        <td>通知間隔日数</td>
+        <td>次回通知日付</td>
+        <td></td>
+    </tr>
+    </thead>
+    {{ range .rlist }}
+    <tr>
+        <td>{{ .Name }}</td>
+        <td>{{ .NotifyTitle }}</td>
+        <td>{{ .NotifyText }}</td>
+        <td>{{ .CycleDays }}</td>
+        <td>{{date .NotifyDate }}</td>
+        <td>
+            <form action="/reminders/{{.ID}}" method="post">
+                <button class="btn btn-danger">変更</button>
+            </form>
+        </td>
+    </tr>
+    {{else}}
+    <tr>
+        <td colspan="6">リマインダー登録がありません</td>
+    </tr>
+    {{ end }}
+</tbody>
+</table>
 
-<p>{{.userID}}</p>
 <div class="container">
   <div class="row">
     <div class="span6">

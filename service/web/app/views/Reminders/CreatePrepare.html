@@ -1,14 +1,14 @@
-{{set . "title" "Login"}}
+{{set . "title" "リマインダー登録"}}
 {{template "header.html" .}}
 
 
 <div class="page-header">
-    <h3>リマインド登録</h3>
+    <h3>リマインダー登録</h3>
 </div>
 
 <form action="/create" method="post">
     <div class="form-group">
-        <label for="name">リマインド名</label> <span class="text-danger">*</span>
+        <label for="name">リマインダー名</label> <span class="text-danger">*</span>
         <input type="text" class="form-control" id="name" name="name" size="10">
     </div>
     <div class="form-group">

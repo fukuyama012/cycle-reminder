@@ -20,8 +20,13 @@ func (c Reminders) Index() revel.Result {
 		// 未ログイン TOP LPへ
 		return c.Redirect(routes.App.Index())
 	}
+	
+	rlist, err := services.GetReminderListByUserID(services.GetDB(), userID, 100, 0)
+	if err != nil {
+		c.Log.Errorf("Index GetReminderListByUserID %#v", err)
+	}
 	isLogin := true
-	return c.Render(userID, isLogin)
+	return c.Render(userID, isLogin, rlist)
 }
 
 // CreatePrepare リマインド作成入力画面
@@ -47,11 +52,10 @@ func (c Reminders) Create() revel.Result {
 
 	// TODO 後ほど整理する。。
 	isLogin := true
-	result := "登録成功！"
+	result := "登録失敗！"
 	cycle_days, errCast := strconv.Atoi(c.Params.Get("cycle_days"))
 	if errCast != nil {
 		c.Log.Errorf("cant cask cycle_days %#v", errCast)
-		result = "登録失敗！"
 		return c.Render(result, isLogin)
 	}
 	// 登録処理
@@ -59,9 +63,10 @@ func (c Reminders) Create() revel.Result {
 		c.Params.Get("notify_title"), c.Params.Get("notify_text"), uint(cycle_days), time.Now())
 	if err != nil {
 		c.Log.Errorf("error, CreateReminderSettingWithRelation %#v", err)
-		result = "登録失敗！"
+		return c.Render(result, isLogin)
 	}
-	return c.Render(result, isLogin)
+	// リスト画面へ
+	return c.Redirect(routes.Reminders.Index())
 }
 
 // getLoginUser ログインユーザー情報取得
