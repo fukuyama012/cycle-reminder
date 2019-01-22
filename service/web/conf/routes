@@ -13,6 +13,7 @@ GET     /logout                                 Auth.Logout
 GET     /auth/callback                          Auth.Callback
 
 GET     /top                                    App.Index
+GET     /terms                                  App.Terms
 
 GET     /reminders                              Reminders.Index
 
