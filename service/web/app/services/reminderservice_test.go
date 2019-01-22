@@ -81,7 +81,7 @@ func TestCreateReminderSettingWithRelationError(t *testing.T) {
 	}
 }
 
-// GetReminderListByUser ユーザー情報からリマインド一覧取得
+// GetReminderListByUserID ユーザー情報からリマインド一覧取得
 func TestGetReminderListByUser(t *testing.T) {
 	prepareTestDB()
 	tests := []struct {
@@ -105,11 +105,7 @@ func TestGetReminderListByUser(t *testing.T) {
 		{1, "name3", 60, time.Date(2099, time.July, 15, 0, 0, 0, 0, models.GetJSTLocation()), 1, 2, 1},
 	}
 	for _, tt := range tests {
-		user := models.User{}
-		err := user.GetById(models.DB, tt.UserID)
-		assert.Nil(t, err)
-
-		reminderList, errList := services.GetReminderListByUser(models.DB, user, tt.Limit, tt.Offset)
+		reminderList, errList := services.GetReminderListByUserID(models.DB, tt.UserID, tt.Limit, tt.Offset)
 		assert.Nil(t, errList)
 		// limitとoffsetの兼ね合いで最大数決まる
 		assert.Equal(t, tt.OutLen, len(reminderList))
@@ -120,7 +116,7 @@ func TestGetReminderListByUser(t *testing.T) {
 	}
 }
 
-// GetReminderListByUser ユーザー情報からリマインド一覧取得
+// GetReminderListByUserID ユーザー情報からリマインド一覧取得
 func TestGetReminderListByUserNotExistsUser(t *testing.T) {
 	prepareTestDB()
 	tests := []struct {
@@ -131,23 +127,19 @@ func TestGetReminderListByUserNotExistsUser(t *testing.T) {
 		{99999, 1, 0},
 	}
 	for _, tt := range tests {
-		user := models.User{}
-		err := user.GetById(models.DB, tt.UserID)
-		assert.Error(t, err)
-
-		reminderList, errList := services.GetReminderListByUser(models.DB, user, tt.Limit, tt.Offset)
+		reminderList, errList := services.GetReminderListByUserID(models.DB, tt.UserID, tt.Limit, tt.Offset)
 		assert.Nil(t, errList)
 		// 存在しないUserで研削した場合は空
 		assert.Equal(t, 0, len(reminderList))
 	}
 }
 
-// GetReminderListByUser ユーザー情報からリマインド一覧取得エラー
+// GetReminderListByUserID ユーザー情報からリマインド一覧取得エラー
 func TestGetReminderListByUserEmptyUser(t *testing.T) {
 	prepareTestDB()
 	user := models.User{}
 	// 空User時はエラー
-	reminderList, errList := services.GetReminderListByUser(models.DB, user, 1, 0)
+	reminderList, errList := services.GetReminderListByUserID(models.DB, user.ID, 1, 0)
 	assert.Error(t, errList)
 	assert.Nil(t, reminderList)
 }
@@ -184,7 +176,8 @@ func TestGetRemindersReachedNotifyDate(t *testing.T) {
 	}
 }
 
-// GetReminderListByUser ユーザー情報からリマインド一覧取得
+// GetReminderSchedulesReachedNotifyDate 通知日付に達した全リマインド予定の通知内容取得
+// 該当無し
 func TestGetRemindersReachedNotifyDateNotFound(t *testing.T) {
 	prepareTestDB()
 	tests := []struct {
@@ -193,7 +186,7 @@ func TestGetRemindersReachedNotifyDateNotFound(t *testing.T) {
 		Limit int
 		Offset int
 	}{
-		// 該当なし
+		// ターゲット日付より古い通知日付のレコードなし
 		{0, time.Date(2017, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), 10, 0},
 	}
 	for _, tt := range tests {
@@ -217,7 +210,7 @@ func TestResetReminderScheduleAfterNotify(t *testing.T) {
 	for _, tt := range tests {
 		err := services.ResetReminderScheduleAfterNotify(tt.ReminderSettingID, tt.BasisDate)
 		assert.Nil(t, err)
-		
+
 		rSet := models.ReminderSetting{}
 		errSet := rSet.GetById(models.DB, tt.ReminderSettingID)
 		assert.Nil(t, errSet)

@@ -25,7 +25,7 @@ type ReminderDetail struct {
 // NotifyDetail 通知内容詳細
 type NotifyDetail struct {
 	Email string
-	ReminderSettingID uint
+	ID uint
 	NotifyTitle string
 	NotifyText string
 }
@@ -65,15 +65,17 @@ func CreateReminderSettingWithRelation(userID uint, name, notifyTitle, notifyTex
 	return rSet, nil
 }
 
-// GetReminderListByUser ユーザー情報からリマインド一覧取得
-func GetReminderListByUser(db *gorm.DB, user models.User, limit, offset int) ([]ReminderDetail, error) {
-	if user.ID == uint(0) {
-		return nil, errors.New("not exists userID, GetReminderListByUser")
+// GetReminderListByUserID ユーザー情報からリマインド一覧取得
+// リマインド一覧画面等で利用
+func GetReminderListByUserID(db *gorm.DB, userID uint, limit, offset int) ([]ReminderDetail, error) {
+	if userID == uint(0) {
+		return nil, errors.New("not exists userID, GetReminderListByUserID")
 	}
 	var result []ReminderDetail
 	if err := db.Table("reminder_settings").Select("reminder_settings.*, reminder_schedules.notify_date").
-		Joins("LEFT JOIN reminder_schedules ON reminder_settings.id = reminder_schedules.reminder_setting_id").
-		Where("user_id = ?", user.ID).
+		Joins("INNER JOIN reminder_schedules ON reminder_settings.id = reminder_schedules.reminder_setting_id").
+		Where("reminder_settings.user_id = ?", userID).
+		Order("reminder_settings.id", true).
 		Limit(limit).Offset(offset).
 		Scan(&result).Error; err != nil {
 			return nil, err
@@ -82,12 +84,14 @@ func GetReminderListByUser(db *gorm.DB, user models.User, limit, offset int) ([]
 }
 
 // GetReminderSchedulesReachedNotifyDate 通知日付に達した全リマインド予定の通知内容取得
+// メール通知処理等で利用
 func GetRemindersReachedNotifyDate(db *gorm.DB, targetDate time.Time, limit, offset int) ([]NotifyDetail, error) {
 	var result []NotifyDetail
-	if err := db.Table("users").Select("users.email, reminder_schedules.reminder_setting_id, reminder_settings.notify_title, reminder_settings.notify_text").
-		Joins("LEFT JOIN reminder_settings ON users.id = reminder_settings.user_id").
-		Joins("LEFT JOIN reminder_schedules ON reminder_settings.id = reminder_schedules.reminder_setting_id").
+	if err := db.Table("reminder_schedules").Select("reminder_schedules.id, users.email, reminder_settings.notify_title, reminder_settings.notify_text").
+		Joins("INNER JOIN reminder_settings ON reminder_schedules.reminder_setting_id = reminder_settings.id").
+		Joins("INNER JOIN users ON reminder_settings.user_id = users.id").
 		Where("reminder_schedules.notify_date <= ?", targetDate.Format("2006-01-02")).
+		Order("reminder_schedules.id", true).
 		Limit(limit).Offset(offset).
 		Scan(&result).Error; err != nil {
 		return nil, err
