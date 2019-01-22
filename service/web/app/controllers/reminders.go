@@ -29,6 +29,54 @@ func (c Reminders) Index() revel.Result {
 	return c.Render(userID, isLogin, rlist)
 }
 
+// UpdatePrepare リマインダー変更入力画面
+func (c Reminders) UpdatePrepare(id int) revel.Result {
+	// loginチェック
+	userID := c.getLoginUser()
+	if userID == uint(0) {
+		// 未ログイン TOP LPへ
+		return c.Redirect(routes.App.Index())
+	}
+	
+	rSet, err := services.GetReminderSettingByID(services.GetDB(), uint(id))
+	if err != nil {
+		// 変更対象存在しない
+		c.Log.Errorf("UpdatePrepare() GetReminderSettingByID %#v", err)
+		c.Redirect(routes.Reminders.Index())
+	}
+
+	isLogin := true
+	return c.Render(userID, isLogin, rSet)
+}
+
+// UpdatePrepare リマインダー変更
+func (c Reminders) Update(id int) revel.Result {
+	// loginチェック
+	userID := c.getLoginUser()
+	if userID == uint(0) {
+		// 未ログイン TOP LPへ
+		return c.Redirect(routes.App.Index())
+	}
+
+	// TODO 後ほど整理する。。
+	isLogin := true
+	result := "変更失敗！"
+	cycle_days, errCast := strconv.Atoi(c.Params.Get("cycle_days"))
+	if errCast != nil {
+		c.Log.Errorf("cant cask cycle_days %#v", errCast)
+		return c.Render(result, isLogin)
+	}
+	// 変更処理
+	_, err := services.UpdateReminderSettingByID(services.GetDB(), uint(id), c.Params.Get("name"),
+		c.Params.Get("notify_title"), c.Params.Get("notify_text"), uint(cycle_days))
+	if err != nil {
+		c.Log.Errorf("Update() UpdateReminderSettingByID %#v", err)
+		return c.Render(result, isLogin)
+	}
+	// リスト画面へ
+	return c.Redirect(routes.Reminders.Index())
+}
+
 // CreatePrepare リマインド作成入力画面
 func (c Reminders) CreatePrepare() revel.Result {
 	// loginチェック
@@ -62,7 +110,7 @@ func (c Reminders) Create() revel.Result {
 	_, err := services.CreateReminderSettingWithRelation(services.GetDB(), userID, c.Params.Get("name"),
 		c.Params.Get("notify_title"), c.Params.Get("notify_text"), uint(cycle_days), time.Now())
 	if err != nil {
-		c.Log.Errorf("error, CreateReminderSettingWithRelation %#v", err)
+		c.Log.Errorf("Create() CreateReminderSettingWithRelation %#v", err)
 		return c.Render(result, isLogin)
 	}
 	// リスト画面へ

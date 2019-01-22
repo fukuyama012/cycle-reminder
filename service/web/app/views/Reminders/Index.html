@@ -25,7 +25,7 @@
         <td>{{ .CycleDays }}</td>
         <td>{{date .NotifyDate }}</td>
         <td>
-            <form action="/reminders/{{.ID}}" method="post">
+            <form action="/reminders/{{.ID}}" method="get">
                 <button class="btn btn-danger">変更</button>
             </form>
         </td>

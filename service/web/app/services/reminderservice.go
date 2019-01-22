@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// ReminderList リマインド詳細
+// ReminderDetail リマインド詳細
 type ReminderDetail struct {
 	ID uint
 	CreatedAt time.Time
@@ -72,7 +72,28 @@ func GetReminderListByUserID(db *gorm.DB, userID uint, limit, offset int) ([]Rem
 	return result, nil
 }
 
-// GetReminderSchedulesReachedNotifyDate 通知日付に達した全リマインド予定の通知内容取得
+// GetReminderSettingByID リマインド設定取得
+func GetReminderSettingByID(db *gorm.DB, id uint) (*models.ReminderSetting, error) {
+	rSet := models.ReminderSetting{}
+	if err := rSet.GetById(db, id); err != nil {
+		return nil, err
+	}
+	return &rSet, nil
+}
+
+// UpdateReminderSettingByID リマインド設定変更
+func UpdateReminderSettingByID(db *gorm.DB, id uint, name, notifyTitle, notifyText string, cycleDays uint) (*models.ReminderSetting, error)  {
+	rSet := models.ReminderSetting{}
+	if err := rSet.GetById(db, id); err != nil {
+		return nil, err
+	}
+	if err := rSet.Updates(db, name, notifyTitle, notifyText, cycleDays); err != nil {
+		return nil, err
+	}
+	return &rSet, nil
+}
+
+// GetRemindersReachedNotifyDate 通知日付に達した全リマインド予定の通知内容取得
 // メール通知処理等で利用
 func GetRemindersReachedNotifyDate(db *gorm.DB, targetDate time.Time, limit, offset int) ([]NotifyDetail, error) {
 	var result []NotifyDetail

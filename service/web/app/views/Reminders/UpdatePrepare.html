@@ -1,29 +1,29 @@
-{{set . "title" "リマインダー登録"}}
+{{set . "title" "リマインダー変更"}}
 {{template "header.html" .}}
 
 
 <div class="page-header">
-    <h3>リマインダー登録</h3>
+    <h3>リマインダー変更</h3>
 </div>
 
-<form action="/create" method="post">
+<form action="/reminders/{{.rSet.ID}}" method="post">
     <div class="form-group">
         <label for="name">リマインダー名</label> <span class="text-danger">*</span>
-        <input type="text" class="form-control" id="name" name="name" size="10">
+        <input type="text" class="form-control" id="name" name="name" size="10" value="{{.rSet.Name}}">
     </div>
     <div class="form-group">
         <label for="notify_title">通知メールタイトル</label>
-        <input type="text" class="form-control" name="notify_title" id="notify_title">
+        <input type="text" class="form-control" name="notify_title" id="notify_title" value="{{.rSet.NotifyTitle}}">
     </div>
     <div class="form-group">
         <label for="notify_text">通知メール本文 </label> <span class="text-danger">*</span>
-        <textarea class="form-control" rows="6" id="notify_text" name="notify_text"></textarea>
+        <textarea class="form-control" rows="6" id="notify_text" name="notify_text">{{.rSet.NotifyText}}</textarea>
     </div>
     <div class="form-inline">
         <label for="cycle_days">通知間隔</label> <span class="text-danger">*</span>
-        <input type="text" class="form-control" name="cycle_days" id="cycle_days"> 日ごとに通知
+        <input type="text" class="form-control" name="cycle_days" id="cycle_days" value="{{.rSet.CycleDays}}"> 日ごとに通知
     </div><br>
-    <button type="submit" class="btn btn-danger">登録 ≫</button>
+    <button type="submit" class="btn btn-danger">変更 ≫</button>
 </form>
 
 <div class="container">
