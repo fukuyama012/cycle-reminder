@@ -31,20 +31,28 @@ func TestCreateReminderSettingWithRelation(t *testing.T) {
 			time.Date(2018, time.February, 1, 0, 0, 0, 0, models.GetJSTLocation())},
 	}
 	for _, tt := range tests {
-		rSet, err := services.CreateReminderSettingWithRelation(tt.UserID, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays, tt.BasisDate)
+		data, err := models.TransactAndReceiveData(models.DB, func(tx *gorm.DB) (i interface{}, e error) {
+			rSet, err := services.CreateReminderSettingWithRelation(tx, tt.UserID, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays, tt.BasisDate)
+			if err != nil {
+				return nil, err
+			}
+			// リレーション情報としてリマインド予定にレコード追加されている
+			rSch := models.ReminderSchedule{}
+			errSch := rSch.GetByReminderSetting(tx, *rSet)
+			assert.Nil(t, errSch)
+			assert.NotEqual(t, uint(0), rSch.ID)
+			// 次回通知日時が適切に設定されている
+			assert.Equal(t, tt.NextNotifyDate, rSch.NotifyDate)
+
+			return rSet, nil
+		})
 		assert.Nil(t, err)
+		rSet, ok := data.(*models.ReminderSetting)
+		assert.True(t, ok)
 		// リマインダーが正常に設定されている
 		assert.NotNil(t, rSet)
 		assert.NotEqual(t, uint(0), rSet.ID)
 		assert.Equal(t, tt.Name ,rSet.Name)
-
-		// リレーション情報としてリマインド予定にレコード追加されている
-		rSch := models.ReminderSchedule{}
-		errSch := rSch.GetByReminderSetting(models.DB, *rSet)
-		assert.Nil(t, errSch)
-		assert.NotEqual(t, uint(0), rSch.ID)
-		// 次回通知日時が適切に設定されている
-		assert.Equal(t, tt.NextNotifyDate, rSch.NotifyDate)
 	}
 }
 
@@ -74,7 +82,7 @@ func TestCreateReminderSettingWithRelationError(t *testing.T) {
 			time.Date(2018, time.February, 1, 0, 0, 0, 0, models.GetJSTLocation())},
 	}
 	for _, tt := range tests {
-		rSet, err := services.CreateReminderSettingWithRelation(tt.UserID, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays, tt.BasisDate)
+		rSet, err := services.CreateReminderSettingWithRelation(models.DB, tt.UserID, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays, tt.BasisDate)
 		assert.Error(t, err)
 		// リマインダーが正常に設定されていない
 		assert.Nil(t, rSet)

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/fukuyama012/cycle-reminder/service/web/app/models"
 	"github.com/jinzhu/gorm"
-	"log"
 	"time"
 )
 
@@ -32,35 +31,25 @@ type NotifyDetail struct {
 
 // CreateReminderSettingWithRelation リマインド設定と紐付くリマインド予定を作成
 // basisDate  起点日付　＊基本的にはtime.Now()を指定する事になる
-func CreateReminderSettingWithRelation(userID uint, name, notifyTitle, notifyText string, cycleDays uint, basisDate time.Time) (*models.ReminderSetting, error)  {
-	data, err := models.TransactAndReceiveData(models.DB, func(tx *gorm.DB) (interface{}, error) {
-		user := models.User{}
-		// トランザクションに含めないとdeadlockする事が有る
-		if err := user.GetById(tx, userID); err != nil {
-			return nil, err
-		}
-		// トランザクション内でnumber値を自動採番
-		number, err := models.GetReminderSettingsNextNumberForCreate(tx)
-		if err != nil {
-			return nil, err
-		}
-		rSet, errSet := models.CreateReminderSetting(tx, user.ID, name, notifyTitle, notifyText, cycleDays, number)
-		if errSet != nil {
-			return nil, errSet
-		}
-		// 起点日付から登録されている間隔日数を足した日付おセット
-		_, errSch := models.CreateReminderSchedule(tx, rSet.ID, rSet.CalculateNotifyDate(basisDate))
-		if errSch != nil {
-			return nil, errSch
-		}
-		return rSet, nil
-	})
+func CreateReminderSettingWithRelation(db *gorm.DB, userID uint, name, notifyTitle, notifyText string, cycleDays uint, basisDate time.Time) (*models.ReminderSetting, error)  {
+	user := models.User{}
+	// トランザクションに含めないとdeadlockする事が有る
+	if err := user.GetById(db, userID); err != nil {
+		return nil, err
+	}
+	// トランザクション内でnumber値を自動採番
+	number, err := models.GetReminderSettingsNextNumberForCreate(db)
 	if err != nil {
 		return nil, err
 	}
-	rSet, ok := data.(*models.ReminderSetting)
-	if !ok {
-		log.Panicf("cant cast ReminderSetting %#v\n", data)
+	rSet, errSet := models.CreateReminderSetting(db, user.ID, name, notifyTitle, notifyText, cycleDays, number)
+	if errSet != nil {
+		return nil, errSet
+	}
+	// 起点日付から登録されている間隔日数を足した日付おセット
+	_, errSch := models.CreateReminderSchedule(db, rSet.ID, rSet.CalculateNotifyDate(basisDate))
+	if errSch != nil {
+		return nil, errSch
 	}
 	return rSet, nil
 }
