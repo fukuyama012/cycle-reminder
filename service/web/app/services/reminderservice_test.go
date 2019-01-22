@@ -82,10 +82,12 @@ func TestCreateReminderSettingWithRelationError(t *testing.T) {
 			time.Date(2018, time.February, 1, 0, 0, 0, 0, models.GetJSTLocation())},
 	}
 	for _, tt := range tests {
-		rSet, err := services.CreateReminderSettingWithRelation(models.DB, tt.UserID, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays, tt.BasisDate)
+		data, err := models.TransactAndReceiveData(models.DB, func(tx *gorm.DB) (i interface{}, e error) {
+			return services.CreateReminderSettingWithRelation(tx, tt.UserID, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays, tt.BasisDate)
+		})
 		assert.Error(t, err)
 		// リマインダーが正常に設定されていない
-		assert.Nil(t, rSet)
+		assert.Nil(t, data)
 	}
 }
 
