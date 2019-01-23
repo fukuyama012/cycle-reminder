@@ -30,7 +30,7 @@ func (c Reminders) Index() revel.Result {
 }
 
 // UpdatePrepare リマインダー変更入力画面
-func (c Reminders) UpdatePrepare(id int) revel.Result {
+func (c Reminders) UpdatePrepare(number int) revel.Result {
 	// loginチェック
 	userID := c.getLoginUser()
 	if userID == uint(0) {
@@ -38,10 +38,10 @@ func (c Reminders) UpdatePrepare(id int) revel.Result {
 		return c.Redirect(routes.App.Index())
 	}
 	
-	rSet, err := services.GetReminderSettingByID(services.GetDB(), uint(id))
+	rSet, err := services.GetReminderSettingByUserIDAndNumber(services.GetDB(), userID, uint(number))
 	if err != nil {
 		// 変更対象存在しない
-		c.Log.Errorf("UpdatePrepare() GetReminderSettingByID %#v", err)
+		c.Log.Errorf("UpdatePrepare() GetReminderSettingByUserIDAndNumber %#v", err)
 		c.Redirect(routes.Reminders.Index())
 	}
 
@@ -50,7 +50,7 @@ func (c Reminders) UpdatePrepare(id int) revel.Result {
 }
 
 // UpdatePrepare リマインダー変更
-func (c Reminders) Update(id int) revel.Result {
+func (c Reminders) Update(number int) revel.Result {
 	// loginチェック
 	userID := c.getLoginUser()
 	if userID == uint(0) {
@@ -67,10 +67,10 @@ func (c Reminders) Update(id int) revel.Result {
 		return c.Render(result, isLogin)
 	}
 	// 変更処理
-	_, err := services.UpdateReminderSettingByID(services.GetDB(), uint(id), c.Params.Get("name"),
+	_, err := services.UpdateReminderSettingByUserIDAndNumber(services.GetDB(), userID, uint(number), c.Params.Get("name"),
 		c.Params.Get("notify_title"), c.Params.Get("notify_text"), uint(cycle_days))
 	if err != nil {
-		c.Log.Errorf("Update() UpdateReminderSettingByID %#v", err)
+		c.Log.Errorf("Update() UpdateReminderSettingByUserIDAndNumber %#v", err)
 		return c.Render(result, isLogin)
 	}
 	// リスト画面へ
@@ -118,7 +118,7 @@ func (c Reminders) Create() revel.Result {
 }
 
 // Delete リマインダー削除
-func (c Reminders) Delete(id int) revel.Result {
+func (c Reminders) Delete(number int) revel.Result {
 	// loginチェック
 	userID := c.getLoginUser()
 	if userID == uint(0) {
@@ -129,8 +129,8 @@ func (c Reminders) Delete(id int) revel.Result {
 	// TODO 後ほど整理する。。
 	isLogin := true
 	result := "削除失敗！"
-	if err := services.DeleteReminderSettingByID(services.GetDB(), uint(id)); err != nil {
-		c.Log.Errorf("Delete() DeleteReminderSettingByID %#v", err)
+	if err := services.DeleteReminderSettingByUserIDAndNumber(services.GetDB(), userID, uint(number)); err != nil {
+		c.Log.Errorf("Delete() DeleteReminderSettingByUserIDAndNumber %#v", err)
 		return c.Render(result, isLogin)
 	}
 	// （成功）リスト画面へ

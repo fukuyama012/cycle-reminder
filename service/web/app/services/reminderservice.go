@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/fukuyama012/cycle-reminder/service/web/app/models"
 	"github.com/jinzhu/gorm"
+	"log"
 	"time"
 )
 
@@ -72,37 +73,49 @@ func GetReminderListByUserID(db *gorm.DB, userID uint, limit, offset int) ([]Rem
 	return result, nil
 }
 
-// GetReminderSettingByID リマインド設定取得
-func GetReminderSettingByID(db *gorm.DB, id uint) (*models.ReminderSetting, error) {
+// GetReminderSettingByUserIDAndNumber リマインド設定取得
+func GetReminderSettingByUserIDAndNumber(db *gorm.DB, UserID, number uint) (*models.ReminderSetting, error) {
 	rSet := models.ReminderSetting{}
-	if err := rSet.GetById(db, id); err != nil {
+	if err := rSet.GetByUserIDAndNumber(db, UserID, number); err != nil {
 		return nil, err
 	}
 	return &rSet, nil
 }
 
-// UpdateReminderSettingByID リマインド設定変更
-func UpdateReminderSettingByID(db *gorm.DB, id uint, name, notifyTitle, notifyText string, cycleDays uint) (*models.ReminderSetting, error)  {
-	rSet := models.ReminderSetting{}
-	if err := rSet.GetById(db, id); err != nil {
+// UpdateReminderSettingByUserIDAndNumber リマインド設定変更
+func UpdateReminderSettingByUserIDAndNumber(db *gorm.DB, userId, number uint, name, notifyTitle, notifyText string, cycleDays uint) (*models.ReminderSetting, error)  {
+	data, err := models.TransactAndReceiveData(db, func(tx *gorm.DB) (interface{}, error) {
+		rSet := models.ReminderSetting{}
+		if err := rSet.GetByUserIDAndNumber(tx, userId, number); err != nil {
+			return nil, err
+		}
+		if err := rSet.Updates(tx, name, notifyTitle, notifyText, cycleDays); err != nil {
+			return nil, err
+		}
+		return &rSet, nil
+	})
+	if err != nil {
 		return nil, err
 	}
-	if err := rSet.Updates(db, name, notifyTitle, notifyText, cycleDays); err != nil {
-		return nil, err
+	rSet, ok := data.(*models.ReminderSetting)
+	if !ok {
+		log.Panicf("cant cast UpdateReminderSettingByUserIDAndNumber %#v\n", err)
 	}
-	return &rSet, nil
+	return rSet, nil
 }
 
-// DeleteReminderSettingByID リマインダー設定削除
-func DeleteReminderSettingByID(db *gorm.DB, id uint) error {
-	rSet := models.ReminderSetting{}
-	if err := rSet.GetById(db, uint(id)); err != nil {
-		return err
-	}
-	if err := rSet.DeleteById(db, uint(id)); err != nil {
-		return err
-	}
-	return nil
+// DeleteReminderSettingByUserIDAndNumber リマインダー設定削除
+func DeleteReminderSettingByUserIDAndNumber(db *gorm.DB, userId, number uint) error {
+	return models.Transact(db, func(tx *gorm.DB) error {
+		rSet := models.ReminderSetting{}
+		if err := rSet.GetByUserIDAndNumber(tx, userId, number); err != nil {
+			return err
+		}
+		if err := rSet.Delete(tx); err != nil {
+			return err
+		}
+		return nil
+	})
 }
 
 // GetRemindersReachedNotifyDate 通知日付に達した全リマインド予定の通知内容取得
