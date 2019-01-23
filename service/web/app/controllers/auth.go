@@ -12,7 +12,7 @@ const (
 )
 
 type Auth struct {
-	*revel.Controller
+	App
 }
 
 // TOPページ　セッション有ればアプリへ 無ければLPへ

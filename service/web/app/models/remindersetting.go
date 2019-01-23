@@ -105,6 +105,17 @@ func (rSet *ReminderSetting) GetById(db *gorm.DB, id uint) error {
 	return nil
 }
 
+// GetByUserIDAndNumber UserIDとNumberで検索
+func (rSet *ReminderSetting) GetByUserIDAndNumber(db *gorm.DB, userID uint, number uint) error {
+	if err := db.Where("user_id = ? AND number = ?", userID, number).First(&rSet).Error; err != nil {
+		if gorm.IsRecordNotFoundError(err){
+			return gorm.ErrRecordNotFound
+		}
+		return err
+	}
+	return nil
+}
+
 // 起点日付＋通知間隔日数で日付を算出する 
 func (rSet *ReminderSetting) CalculateNotifyDate(basisDate time.Time) time.Time {
 	return basisDate.AddDate(0, 0, int(rSet.CycleDays))
@@ -126,14 +137,13 @@ func (rSet *ReminderSetting) Updates(db *gorm.DB, name, notifyTitle, notifyText 
 	return nil
 }
 
-// IDで削除
-func (rs *ReminderSetting) DeleteById(db *gorm.DB, id uint) error {
-	if id == 0 {
-		return errors.New("empty ReminderSetting Id!")
+// Delete 削除
+func (rSet *ReminderSetting) Delete(db *gorm.DB) error {
+	if rSet.ID == 0 {
+		return errors.New("empty ReminderSetting ID!")
 	}
-	rs.ID = id
 	// 物理削除
-	return db.Unscoped().Delete(&rs).Error
+	return db.Unscoped().Delete(&rSet).Error
 }
 
 

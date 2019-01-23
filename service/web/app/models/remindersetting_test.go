@@ -220,6 +220,50 @@ func TestReminderSetting_GetByIdError(t *testing.T) {
 	}
 }
 
+// GetByUserIDAndNumber UserIDとNumberで検索
+func TestReminderSetting_GetByUserIDAndNumber(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		UserID  uint
+		Number uint
+		Name string
+		CycleDays uint
+	}{
+		{1, 1, "name", 7},
+		{1, 2, "name2", 30},
+		{2, 3, "name3", 1},
+	}
+	for _, tt := range tests {
+		rs := models.ReminderSetting{}
+		if err := rs.GetByUserIDAndNumber(models.DB, tt.UserID, tt.Number); err != nil{
+			t.Error(err)
+		}
+		assert.Equal(t, tt.Name, rs.Name)
+		assert.Equal(t, tt.CycleDays, rs.CycleDays)
+	}
+}
+
+// GetByUserIDAndNumber UserIDとNumberで検索　
+// 対象レコード無し
+func TestReminderSetting_GetByUserIDAndNumberRecordNotFound(t *testing.T) {
+	tests := []struct {
+		UserID  uint
+		Number uint
+	}{
+		{1, 9999},
+		{9999, 1},
+		{9999, 9999},
+		{0, 0},
+	}
+	for _, tt := range tests {
+		rs := models.ReminderSetting{}
+		err := rs.GetByUserIDAndNumber(models.DB, tt.UserID, tt.Number);
+		assert.Equal(t, gorm.ErrRecordNotFound, err)
+		assert.Equal(t, "", rs.NotifyTitle)
+		assert.Equal(t, uint(0), rs.ID)
+	}
+}
+
 // 起点日付＋通知間隔日数で日付を算出する
 func TestReminderSetting_CalculateNotifyDate(t *testing.T) {
 	prepareTestDB()
@@ -328,7 +372,7 @@ func TestReminderSetting_UpdatesNoIdError(t *testing.T) {
 }
 
 // 削除(チェックの整合性の為トランザクション化)
-func TestReminderSetting_DeleteByIdTransaction(t *testing.T) {
+func TestReminderSetting_DeleteTransaction(t *testing.T) {
 	prepareTestDB()
 	tests := []struct {
 		in  uint
@@ -336,7 +380,6 @@ func TestReminderSetting_DeleteByIdTransaction(t *testing.T) {
 	}{
 		{1, true},
 		{2, true},
-		{9999, false},
 	}
 	err := models.Transact(models.DB, func(tx *gorm.DB) error {
 		for _, tt := range tests {
@@ -345,7 +388,10 @@ func TestReminderSetting_DeleteByIdTransaction(t *testing.T) {
 				return errCount
 			}
 			rs := models.ReminderSetting{}
-			if err := rs.DeleteById(tx, tt.in); err != nil {
+			if err := rs.GetById(tx, tt.in); err != nil {
+				return err
+			}
+			if err := rs.Delete(tx); err != nil {
 				return err
 			}
 			recordCountAfter, errCount := models.CountReminderSetting(tx)
@@ -366,32 +412,50 @@ func TestReminderSetting_DeleteByIdTransaction(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-// 削除エラー(チェックの整合性の為トランザクション化)
-func TestReminderSetting_DeleteByIdErrorTransaction(t *testing.T) {
+// 削除(チェックの整合性の為トランザクション化)
+// 該当ID無し
+func TestReminderSetting_DeleteTransaction2(t *testing.T) {
 	prepareTestDB()
-	tests := []struct {
-		in  uint
-	}{
-		{0},
-	}
-	for _, tt := range tests {
-		err := models.Transact(models.DB, func(tx *gorm.DB) error {
-			recordCountBefore, errCount := models.CountReminderSetting(tx)
-			if errCount != nil {
-				t.Errorf("reminder setting count err %#v", errCount)
-			}
-			rs := models.ReminderSetting{}
-			err := rs.DeleteById(tx, tt.in);
-			assert.Error(t, err)
-			recordCountAfter, errCount := models.CountReminderSetting(tx)
-			if errCount != nil {
-				t.Errorf("reminder setting count err %#v", errCount)
-			}
-			// id=0指定エラー時
-			// レコードが減少していない
-			assert.Equal(t, recordCountBefore, recordCountAfter)
-			return err
-		})
+	err := models.Transact(models.DB, func(tx *gorm.DB) error {
+		recordCountBefore, errCount := models.CountReminderSetting(tx)
+		if errCount != nil {
+			t.Errorf("reminder setting count err %#v", errCount)
+		}
+		rs := models.ReminderSetting{}
+		rs.ID = 99999
+		// 該当ID無し時、特にエラーは返さない
+		err := rs.Delete(tx);
+		recordCountAfter, errCount := models.CountReminderSetting(tx)
+		if errCount != nil {
+			t.Errorf("reminder setting count err %#v", errCount)
+		}
+		// id=0指定エラー時
+		// レコードが減少していない
+		assert.Equal(t, recordCountBefore, recordCountAfter)
+		return err
+	})
+	assert.Nil(t, err)
+}
+
+// 削除エラー(チェックの整合性の為トランザクション化)
+func TestReminderSetting_DeleteErrorTransaction(t *testing.T) {
+	prepareTestDB()
+	err := models.Transact(models.DB, func(tx *gorm.DB) error {
+		recordCountBefore, errCount := models.CountReminderSetting(tx)
+		if errCount != nil {
+			t.Errorf("reminder setting count err %#v", errCount)
+		}
+		rs := models.ReminderSetting{}
+		err := rs.Delete(tx);
 		assert.Error(t, err)
-	}
+		recordCountAfter, errCount := models.CountReminderSetting(tx)
+		if errCount != nil {
+			t.Errorf("reminder setting count err %#v", errCount)
+		}
+		// id=0指定エラー時
+		// レコードが減少していない
+		assert.Equal(t, recordCountBefore, recordCountAfter)
+		return err
+	})
+	assert.Error(t, err)
 }
