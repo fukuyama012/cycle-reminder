@@ -6,7 +6,7 @@
     <h3>リマインダー変更</h3>
 </div>
 
-<form action="/reminders/{{.rSet.ID}}" method="post">
+<form action="/reminders/{{.rSet.Number}}" method="post">
     <div class="form-group">
         <label for="name">リマインダー名</label> <span class="text-danger">*</span>
         <input type="text" class="form-control" id="name" name="name" size="10" value="{{.rSet.Name}}">
@@ -26,7 +26,7 @@
     <button type="submit" class="btn btn-info">変更 ≫</button>
 </form>
 <br><br>
-<form action="/reminders/delete/{{.rSet.ID}}" method="post">
+<form action="/reminders/delete/{{.rSet.Number}}" method="post">
     <button type="submit" class="btn btn-danger">リマインダーを削除</button>
 </form>
 
