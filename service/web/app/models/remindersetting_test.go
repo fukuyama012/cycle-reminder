@@ -220,6 +220,50 @@ func TestReminderSetting_GetByIdError(t *testing.T) {
 	}
 }
 
+// GetByUserIDAndNumber UserIDとNumberで検索
+func TestReminderSetting_GetByUserIDAndNumber(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		UserID  uint
+		Number uint
+		Name string
+		CycleDays uint
+	}{
+		{1, 1, "name", 7},
+		{1, 2, "name2", 30},
+		{2, 3, "name3", 1},
+	}
+	for _, tt := range tests {
+		rs := models.ReminderSetting{}
+		if err := rs.GetByUserIDAndNumber(models.DB, tt.UserID, tt.Number); err != nil{
+			t.Error(err)
+		}
+		assert.Equal(t, tt.Name, rs.Name)
+		assert.Equal(t, tt.CycleDays, rs.CycleDays)
+	}
+}
+
+// GetByUserIDAndNumber UserIDとNumberで検索　
+// 対象レコード無し
+func TestReminderSetting_GetByUserIDAndNumberRecordNotFound(t *testing.T) {
+	tests := []struct {
+		UserID  uint
+		Number uint
+	}{
+		{1, 9999},
+		{9999, 1},
+		{9999, 9999},
+		{0, 0},
+	}
+	for _, tt := range tests {
+		rs := models.ReminderSetting{}
+		err := rs.GetByUserIDAndNumber(models.DB, tt.UserID, tt.Number);
+		assert.Equal(t, gorm.ErrRecordNotFound, err)
+		assert.Equal(t, "", rs.NotifyTitle)
+		assert.Equal(t, uint(0), rs.ID)
+	}
+}
+
 // 起点日付＋通知間隔日数で日付を算出する
 func TestReminderSetting_CalculateNotifyDate(t *testing.T) {
 	prepareTestDB()

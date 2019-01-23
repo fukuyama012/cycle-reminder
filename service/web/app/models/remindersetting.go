@@ -105,6 +105,17 @@ func (rSet *ReminderSetting) GetById(db *gorm.DB, id uint) error {
 	return nil
 }
 
+// GetByUserIDAndNumber UserIDとNumberで検索
+func (rSet *ReminderSetting) GetByUserIDAndNumber(db *gorm.DB, userID uint, number uint) error {
+	if err := db.Where("user_id = ? AND number = ?", userID, number).First(&rSet).Error; err != nil {
+		if gorm.IsRecordNotFoundError(err){
+			return gorm.ErrRecordNotFound
+		}
+		return err
+	}
+	return nil
+}
+
 // 起点日付＋通知間隔日数で日付を算出する 
 func (rSet *ReminderSetting) CalculateNotifyDate(basisDate time.Time) time.Time {
 	return basisDate.AddDate(0, 0, int(rSet.CycleDays))
