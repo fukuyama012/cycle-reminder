@@ -137,14 +137,13 @@ func (rSet *ReminderSetting) Updates(db *gorm.DB, name, notifyTitle, notifyText 
 	return nil
 }
 
-// IDで削除
-func (rs *ReminderSetting) DeleteById(db *gorm.DB, id uint) error {
-	if id == 0 {
-		return errors.New("empty ReminderSetting Id!")
+// Delete 削除
+func (rSet *ReminderSetting) Delete(db *gorm.DB) error {
+	if rSet.ID == 0 {
+		return errors.New("empty ReminderSetting ID!")
 	}
-	rs.ID = id
 	// 物理削除
-	return db.Unscoped().Delete(&rs).Error
+	return db.Unscoped().Delete(&rSet).Error
 }
 
 

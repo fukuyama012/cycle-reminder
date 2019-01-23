@@ -372,7 +372,7 @@ func TestReminderSetting_UpdatesNoIdError(t *testing.T) {
 }
 
 // 削除(チェックの整合性の為トランザクション化)
-func TestReminderSetting_DeleteByIdTransaction(t *testing.T) {
+func TestReminderSetting_DeleteTransaction(t *testing.T) {
 	prepareTestDB()
 	tests := []struct {
 		in  uint
@@ -380,7 +380,6 @@ func TestReminderSetting_DeleteByIdTransaction(t *testing.T) {
 	}{
 		{1, true},
 		{2, true},
-		{9999, false},
 	}
 	err := models.Transact(models.DB, func(tx *gorm.DB) error {
 		for _, tt := range tests {
@@ -389,7 +388,10 @@ func TestReminderSetting_DeleteByIdTransaction(t *testing.T) {
 				return errCount
 			}
 			rs := models.ReminderSetting{}
-			if err := rs.DeleteById(tx, tt.in); err != nil {
+			if err := rs.GetById(tx, tt.in); err != nil {
+				return err
+			}
+			if err := rs.Delete(tx); err != nil {
 				return err
 			}
 			recordCountAfter, errCount := models.CountReminderSetting(tx)
@@ -410,32 +412,50 @@ func TestReminderSetting_DeleteByIdTransaction(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-// 削除エラー(チェックの整合性の為トランザクション化)
-func TestReminderSetting_DeleteByIdErrorTransaction(t *testing.T) {
+// 削除(チェックの整合性の為トランザクション化)
+// 該当ID無し
+func TestReminderSetting_DeleteTransaction2(t *testing.T) {
 	prepareTestDB()
-	tests := []struct {
-		in  uint
-	}{
-		{0},
-	}
-	for _, tt := range tests {
-		err := models.Transact(models.DB, func(tx *gorm.DB) error {
-			recordCountBefore, errCount := models.CountReminderSetting(tx)
-			if errCount != nil {
-				t.Errorf("reminder setting count err %#v", errCount)
-			}
-			rs := models.ReminderSetting{}
-			err := rs.DeleteById(tx, tt.in);
-			assert.Error(t, err)
-			recordCountAfter, errCount := models.CountReminderSetting(tx)
-			if errCount != nil {
-				t.Errorf("reminder setting count err %#v", errCount)
-			}
-			// id=0指定エラー時
-			// レコードが減少していない
-			assert.Equal(t, recordCountBefore, recordCountAfter)
-			return err
-		})
+	err := models.Transact(models.DB, func(tx *gorm.DB) error {
+		recordCountBefore, errCount := models.CountReminderSetting(tx)
+		if errCount != nil {
+			t.Errorf("reminder setting count err %#v", errCount)
+		}
+		rs := models.ReminderSetting{}
+		rs.ID = 99999
+		// 該当ID無し時、特にエラーは返さない
+		err := rs.Delete(tx);
+		recordCountAfter, errCount := models.CountReminderSetting(tx)
+		if errCount != nil {
+			t.Errorf("reminder setting count err %#v", errCount)
+		}
+		// id=0指定エラー時
+		// レコードが減少していない
+		assert.Equal(t, recordCountBefore, recordCountAfter)
+		return err
+	})
+	assert.Nil(t, err)
+}
+
+// 削除エラー(チェックの整合性の為トランザクション化)
+func TestReminderSetting_DeleteErrorTransaction(t *testing.T) {
+	prepareTestDB()
+	err := models.Transact(models.DB, func(tx *gorm.DB) error {
+		recordCountBefore, errCount := models.CountReminderSetting(tx)
+		if errCount != nil {
+			t.Errorf("reminder setting count err %#v", errCount)
+		}
+		rs := models.ReminderSetting{}
+		err := rs.Delete(tx);
 		assert.Error(t, err)
-	}
+		recordCountAfter, errCount := models.CountReminderSetting(tx)
+		if errCount != nil {
+			t.Errorf("reminder setting count err %#v", errCount)
+		}
+		// id=0指定エラー時
+		// レコードが減少していない
+		assert.Equal(t, recordCountBefore, recordCountAfter)
+		return err
+	})
+	assert.Error(t, err)
 }

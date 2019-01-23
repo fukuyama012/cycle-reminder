@@ -111,7 +111,7 @@ func DeleteReminderSettingByUserIDAndNumber(db *gorm.DB, userId, number uint) er
 		if err := rSet.GetByUserIDAndNumber(tx, userId, number); err != nil {
 			return err
 		}
-		if err := rSet.DeleteById(tx, rSet.ID); err != nil {
+		if err := rSet.Delete(tx); err != nil {
 			return err
 		}
 		return nil
