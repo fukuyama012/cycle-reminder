@@ -9,7 +9,7 @@ import (
 )
 
 type Reminders struct {
-	*revel.Controller
+	App
 }
 
 // Index リマインド一覧表示
@@ -137,30 +137,3 @@ func (c Reminders) Delete(number int) revel.Result {
 	return c.Redirect(routes.Reminders.Index())	
 }
 
-// getLoginUser ログインユーザー情報取得
-func (c Reminders) getLoginUser() (uint) {
-	// loginチェック
-	userIdSession, ok := c.getUserIdBySession()
-	if !ok {
-		// 有効なセッション情報無し
-		return uint(0)
-	}
-	user, err := services.CheckUserID(userIdSession)
-	if err != nil {
-		// ユーザー登録無し
-		return uint(0)
-	}
-	return user.ID
-}
-
-func (c Reminders) getUserIdBySession() (uint, bool) {
-	userIdSesson, err := c.Session.Get(serviceLoginSession);
-	if err != nil {
-		return 0, false
-	}
-	val, ok := userIdSesson.(float64)
-	if !ok {
-		return 0, false
-	}
-	return uint(val), true
-}

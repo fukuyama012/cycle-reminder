@@ -3,6 +3,7 @@ package controllers
 import (
 	"github.com/fukuyama012/cycle-reminder/service/web/app/services"
 	"github.com/revel/revel"
+	"os"
 )
 
 type App struct {
@@ -55,4 +56,10 @@ func (c App) getUserIdBySession() (uint, bool) {
 		return 0, false
 	}
 	return uint(val), true
+}
+
+// setCommonToView　Viewに共通情報を設定
+func (c App) setCommonToView() revel.Result {
+	c.ViewArgs["googleAnalytics"] = os.Getenv("GOOGLE_ANALYTICS")
+	return nil
 }
