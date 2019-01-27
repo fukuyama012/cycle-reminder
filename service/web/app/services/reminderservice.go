@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/fukuyama012/cycle-reminder/service/web/app/models"
 	"github.com/jinzhu/gorm"
-	"log"
 	"time"
 )
 
@@ -97,11 +96,7 @@ func UpdateReminderSettingByUserIDAndNumber(db *gorm.DB, userId, number uint, na
 	if err != nil {
 		return nil, err
 	}
-	rSet, ok := data.(*models.ReminderSetting)
-	if !ok {
-		log.Panicf("cant cast UpdateReminderSettingByUserIDAndNumber %#v\n", err)
-	}
-	return rSet, nil
+	return data.(*models.ReminderSetting), nil
 }
 
 // DeleteReminderSettingByUserIDAndNumber リマインダー設定削除
@@ -120,12 +115,12 @@ func DeleteReminderSettingByUserIDAndNumber(db *gorm.DB, userId, number uint) er
 
 // GetRemindersReachedNotifyDate 通知日付に達した全リマインド予定の通知内容取得
 // メール通知処理等で利用
-func GetRemindersReachedNotifyDate(db *gorm.DB, targetDate time.Time, limit, offset int) ([]NotifyDetail, error) {
+func GetRemindersReachedNotifyDate(db *gorm.DB, targetDate time.Time, reminderScheduleID uint, limit, offset int) ([]NotifyDetail, error) {
 	var result []NotifyDetail
 	if err := db.Table("reminder_schedules").Select("reminder_schedules.id, users.email, reminder_settings.notify_title, reminder_settings.notify_text").
 		Joins("INNER JOIN reminder_settings ON reminder_schedules.reminder_setting_id = reminder_settings.id").
 		Joins("INNER JOIN users ON reminder_settings.user_id = users.id").
-		Where("reminder_schedules.notify_date <= ?", targetDate.Format("2006-01-02")).
+		Where("reminder_schedules.notify_date <= ? AND reminder_schedules.id > ?", targetDate.Format("2006-01-02"), reminderScheduleID).
 		Order("reminder_schedules.id", true).
 		Limit(limit).Offset(offset).
 		Scan(&result).Error; err != nil {
