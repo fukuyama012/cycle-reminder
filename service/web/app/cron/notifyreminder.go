@@ -21,14 +21,14 @@ func main()  {
 
 // doNotifyReminder 通知処理実行
 func doNotifyReminder()  {
-	reminderScheduleID := uint(0)
+	scheduleID := uint(0)
 	limit := 100
 	offset := 0
 	sendTotal := 0
 	sendCountOneRound := 0
 	for {
 		// 本日を起点に予定されている通知日時をチェック
-		notifyDetails, err := services.GetRemindersReachedNotifyDate(services.GetDB(), time.Now(), reminderScheduleID, limit, offset)
+		notifyDetails, err := services.GetRemindersReachedNotifyDate(services.GetDB(), time.Now(), scheduleID, limit, offset)
 		if err != nil {
 			// 検索処理失敗
 			logError("GetRemindersReachedNotifyDate %#v", err)
@@ -38,9 +38,9 @@ func doNotifyReminder()  {
 			// 対象レコード無し
 			break
 		}
-		reminderScheduleID, sendCountOneRound = sendMailTargetNotifyDetails(notifyDetails)
+		scheduleID, sendCountOneRound = sendMailTargetNotifyDetails(notifyDetails)
 		sendTotal += sendCountOneRound
-		if reminderScheduleID == uint(0) {
+		if scheduleID == uint(0) {
 			// 一応ガード
 			break
 		}
@@ -50,23 +50,23 @@ func doNotifyReminder()  {
 
 // sendMailByNotifyDetails 通知詳細分メール送信実行
 func sendMailTargetNotifyDetails(notifyDetails []services.NotifyDetail) (uint, int) {
-	reminderScheduleID := uint(0)
+	scheduleID := uint(0)
 	sendCount := 0
 	for _, notifyDetail := range notifyDetails {
-		reminderScheduleID = notifyDetail.ID
+		scheduleID = notifyDetail.ScheduleID
 		if err := sendMailCore(notifyDetail); err != nil {
-			logError("sendMailCore ScheduleID [%d] %#v", notifyDetail.ID, err)
+			logError("sendMailCore ScheduleID [%d] %#v", notifyDetail.ScheduleID, err)
 			continue
 		}
 		// 送信成功したら本日を起点に次回通知日付更新
-		if err := services.ResetReminderScheduleAfterNotify(notifyDetail.ID, time.Now()); err != nil {
-			logError("ResetReminderScheduleAfterNotify ScheduleID [%d]", notifyDetail.ID)
+		if err := services.ResetReminderScheduleAfterNotify(notifyDetail.SettingID, time.Now()); err != nil {
+			logError("ResetReminderScheduleAfterNotify ScheduleID [%d]", notifyDetail.ScheduleID)
 		}
 		sendCount++
 		// 余裕を持って送信する
 		time.Sleep(500 * time.Millisecond)
 	}
-	return reminderScheduleID, sendCount
+	return scheduleID, sendCount
 }
 
 // sendMailCore　NotifyDetailを元にメール送信し結果確認

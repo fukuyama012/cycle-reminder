@@ -24,7 +24,8 @@ type ReminderDetail struct {
 // NotifyDetail 通知内容詳細
 type NotifyDetail struct {
 	Email string
-	ID uint
+	SettingID uint
+	ScheduleID uint
 	NotifyTitle string
 	NotifyText string
 }
@@ -117,7 +118,7 @@ func DeleteReminderSettingByUserIDAndNumber(db *gorm.DB, userId, number uint) er
 // メール通知処理等で利用
 func GetRemindersReachedNotifyDate(db *gorm.DB, targetDate time.Time, reminderScheduleID uint, limit, offset int) ([]NotifyDetail, error) {
 	var result []NotifyDetail
-	if err := db.Table("reminder_schedules").Select("reminder_schedules.id, users.email, reminder_settings.notify_title, reminder_settings.notify_text").
+	if err := db.Table("reminder_schedules").Select("reminder_settings.id AS setting_id, reminder_schedules.id AS schedule_id, users.email, reminder_settings.notify_title, reminder_settings.notify_text").
 		Joins("INNER JOIN reminder_settings ON reminder_schedules.reminder_setting_id = reminder_settings.id").
 		Joins("INNER JOIN users ON reminder_settings.user_id = users.id").
 		Where("reminder_schedules.notify_date <= ? AND reminder_schedules.id > ?", targetDate.Format("2006-01-02"), reminderScheduleID).

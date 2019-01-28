@@ -163,6 +163,8 @@ func TestGetRemindersReachedNotifyDate(t *testing.T) {
 	prepareTestDB()
 	tests := []struct {
 		OutLen int
+		SettingID uint
+		ScheduleID uint
 		Email string
 		TargetDate time.Time
 		OverID uint
@@ -170,20 +172,20 @@ func TestGetRemindersReachedNotifyDate(t *testing.T) {
 		Offset int
 	}{
 		// limit, offset 別に正常系テスト
-		{1, "test1@example.com", time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()), uint(0), 10, 0},
-		{1, "test1@example.com", time.Date(2019, time.February, 27, 0, 0, 0, 0, models.GetJSTLocation()), uint(0), 10, 0},
-		{2, "test1@example.com",  time.Date(2019, time.February, 28, 0, 0, 0, 0, models.GetJSTLocation()), uint(0), 10, 0},
-		{2, "test1@example.com",  time.Date(2020, time.December, 30, 0, 0, 0, 0, models.GetJSTLocation()), uint(0), 10, 0},
-		{3, "test1@example.com",  time.Date(2020, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), uint(0), 10, 0},
+		{1, 1, 1, "test1@example.com", time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()), uint(0), 10, 0},
+		{1, 1, 1, "test1@example.com", time.Date(2019, time.February, 27, 0, 0, 0, 0, models.GetJSTLocation()), uint(0), 10, 0},
+		{2, 1, 1, "test1@example.com",  time.Date(2019, time.February, 28, 0, 0, 0, 0, models.GetJSTLocation()), uint(0), 10, 0},
+		{2, 1, 1, "test1@example.com",  time.Date(2020, time.December, 30, 0, 0, 0, 0, models.GetJSTLocation()), uint(0), 10, 0},
+		{3, 1, 1, "test1@example.com",  time.Date(2020, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), uint(0), 10, 0},
 		// 指定IDによる変化
-		{2, "test1@example.com",  time.Date(2020, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), uint(1), 10, 0},
-		{1, "test2@example.com",  time.Date(2020, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), uint(1)+uint(1), 10, 0},
+		{2, 2, 2, "test1@example.com",  time.Date(2020, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), uint(1), 10, 0},
+		{1, 3, 3, "test2@example.com",  time.Date(2020, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), uint(1)+uint(1), 10, 0},
 		// limit変化
-		{2, "test1@example.com",  time.Date(2020, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), uint(0), 2, 0},
-		{1, "test1@example.com",  time.Date(2020, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), uint(0), 1, 0},
+		{2, 1, 1, "test1@example.com",  time.Date(2020, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), uint(0), 2, 0},
+		{1, 1, 1,  "test1@example.com",  time.Date(2020, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), uint(0), 1, 0},
 		// offset変化
-		{2, "test1@example.com",  time.Date(2020, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), uint(0), 10, 1},
-		{1, "test2@example.com",  time.Date(2020, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), uint(0), 10, 2},
+		{2, 2, 2, "test1@example.com",  time.Date(2020, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), uint(0), 10, 1},
+		{1, 3, 3, "test2@example.com",  time.Date(2020, time.December, 31, 0, 0, 0, 0, models.GetJSTLocation()), uint(0), 10, 2},
 	}
 	for _, tt := range tests {
 		reminderList, err := services.GetRemindersReachedNotifyDate(models.DB, tt.TargetDate, tt.OverID, tt.Limit, tt.Offset)
@@ -191,6 +193,8 @@ func TestGetRemindersReachedNotifyDate(t *testing.T) {
 		// limitとoffsetの兼ね合いで最大数決まる
 		assert.Equal(t, tt.OutLen, len(reminderList))
 		assert.Equal(t, tt.Email, reminderList[0].Email)
+		assert.Equal(t, tt.SettingID, reminderList[0].SettingID)
+		assert.Equal(t, tt.ScheduleID, reminderList[0].ScheduleID)
 	}
 }
 
