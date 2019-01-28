@@ -22,12 +22,11 @@ func main()  {
 func doNotifyReminder()  {
 	scheduleID := uint(0)
 	limit := 100
-	offset := 0
 	sendTotal := 0
 	sendCountOneRound := 0
 	for {
 		// 本日を起点に予定されている通知日時をチェック
-		notifyDetails, err := services.GetRemindersReachedNotifyDate(services.GetDB(), time.Now(), scheduleID, limit, offset)
+		notifyDetails, err := services.GetRemindersReachedNotifyDate(services.GetDB(), time.Now(), scheduleID, limit)
 		if err != nil {
 			// 検索処理失敗
 			logError("GetRemindersReachedNotifyDate %#v", err)

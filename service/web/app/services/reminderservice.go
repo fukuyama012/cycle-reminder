@@ -116,14 +116,14 @@ func DeleteReminderSettingByUserIDAndNumber(db *gorm.DB, userID, number uint) er
 
 // GetRemindersReachedNotifyDate 通知日付に達した全リマインド予定の通知内容取得
 // メール通知処理等で利用
-func GetRemindersReachedNotifyDate(db *gorm.DB, targetDate time.Time, reminderScheduleID uint, limit, offset int) ([]NotifyDetail, error) {
+func GetRemindersReachedNotifyDate(db *gorm.DB, targetDate time.Time, reminderScheduleID uint, limit int) ([]NotifyDetail, error) {
 	var result []NotifyDetail
 	if err := db.Table("reminder_schedules").Select("reminder_settings.id AS setting_id, reminder_schedules.id AS schedule_id, users.email, reminder_settings.notify_title, reminder_settings.notify_text").
 		Joins("INNER JOIN reminder_settings ON reminder_schedules.reminder_setting_id = reminder_settings.id").
 		Joins("INNER JOIN users ON reminder_settings.user_id = users.id").
 		Where("reminder_schedules.notify_date <= ? AND reminder_schedules.id > ?", targetDate.Format("2006-01-02"), reminderScheduleID).
 		Order("reminder_schedules.id", true).
-		Limit(limit).Offset(offset).
+		Limit(limit).
 		Scan(&result).Error; err != nil {
 		return nil, err
 	}
