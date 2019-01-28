@@ -69,7 +69,7 @@ func sendMailTargetNotifyDetails(notifyDetails []services.NotifyDetail) (uint, i
 }
 
 // logInfo 結果ログ
-func logInfo(format string, v ...interface{})  {
+func logInfo(format string, v interface{})  {
 	logfile := openFile("notify")
 	defer logfile.Close()
 
@@ -78,7 +78,7 @@ func logInfo(format string, v ...interface{})  {
 }
 
 // logError エラーログ
-func logError(format string, v ...interface{})  {
+func logError(format string, v interface{})  {
 	logfile := openFile("notify_error")
 	defer logfile.Close()
 

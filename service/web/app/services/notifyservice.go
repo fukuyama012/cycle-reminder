@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// sendMailCore　NotifyDetailを元にメール送信し結果確認
+// Notify　NotifyDetailを元にメール送信し結果確認
 func Notify(notifyDetail NotifyDetail) error {
 	adjustNotifyContent(GetDB(), &notifyDetail)
 	response, err := SendMail(notifyDetail.Email, notifyDetail.NotifyTitle, notifyDetail.NotifyText)
