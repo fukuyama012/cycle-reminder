@@ -69,21 +69,21 @@ func sendMailTargetNotifyDetails(notifyDetails []services.NotifyDetail) (uint, i
 }
 
 // logInfo 結果ログ
-func logInfo(format string, v interface{})  {
+func logInfo(format string, v ...interface{})  {
 	logfile := openFile("notify")
 	defer logfile.Close()
 
 	Logger.SetOutput(logfile)
-	Logger.Printf(format, v)
+	Logger.Printf(format, v...)
 }
 
 // logError エラーログ
-func logError(format string, v interface{})  {
+func logError(format string, v ...interface{})  {
 	logfile := openFile("notify_error")
 	defer logfile.Close()
 
 	Logger.SetOutput(logfile)
-	Logger.Printf(format, v)
+	Logger.Printf(format, v...)
 }
 
 // openFile 指定ファイル読み込み
