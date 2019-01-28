@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"github.com/fukuyama012/cycle-reminder/service/web/app/services"
 	"log"
 	"os"
@@ -54,7 +53,7 @@ func sendMailTargetNotifyDetails(notifyDetails []services.NotifyDetail) (uint, i
 	sendCount := 0
 	for _, notifyDetail := range notifyDetails {
 		scheduleID = notifyDetail.ScheduleID
-		if err := sendMailCore(notifyDetail); err != nil {
+		if err := services.Notify(notifyDetail); err != nil {
 			logError("sendMailCore ScheduleID [%d] %#v", notifyDetail.ScheduleID, err)
 			continue
 		}
@@ -67,27 +66,6 @@ func sendMailTargetNotifyDetails(notifyDetails []services.NotifyDetail) (uint, i
 		time.Sleep(500 * time.Millisecond)
 	}
 	return scheduleID, sendCount
-}
-
-// sendMailCore　NotifyDetailを元にメール送信し結果確認
-func sendMailCore(notifyDetail services.NotifyDetail) error {
-	adjustNotifyContent(&notifyDetail)
-	response, err := services.SendMail(notifyDetail.Email, notifyDetail.NotifyTitle, notifyDetail.NotifyText)
-	if err != nil {
-		return err
-	}
-	if !services.IsSuccessStatusCode(response) {
-		return errors.New("IsSuccessStatusCode")
-	}
-	return nil
-}
-
-// adjustNotifyContent　通知情報調整
-func adjustNotifyContent(notifyDetail *services.NotifyDetail)  {
-	// メールタイトルが空の場合、補足する
-	if len(notifyDetail.NotifyTitle) == 0 {
-		notifyDetail.NotifyText = "Notify from Cycle Reminder"
-	}
 }
 
 // logInfo 結果ログ

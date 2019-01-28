@@ -83,10 +83,10 @@ func GetReminderSettingByUserIDAndNumber(db *gorm.DB, UserID, number uint) (*mod
 }
 
 // UpdateReminderSettingByUserIDAndNumber リマインド設定変更
-func UpdateReminderSettingByUserIDAndNumber(db *gorm.DB, userId, number uint, name, notifyTitle, notifyText string, cycleDays uint) (*models.ReminderSetting, error)  {
+func UpdateReminderSettingByUserIDAndNumber(db *gorm.DB, userID, number uint, name, notifyTitle, notifyText string, cycleDays uint) (*models.ReminderSetting, error)  {
 	data, err := models.TransactAndReceiveData(db, func(tx *gorm.DB) (interface{}, error) {
 		rSet := models.ReminderSetting{}
-		if err := rSet.GetByUserIDAndNumber(tx, userId, number); err != nil {
+		if err := rSet.GetByUserIDAndNumber(tx, userID, number); err != nil {
 			return nil, err
 		}
 		if err := rSet.Updates(tx, name, notifyTitle, notifyText, cycleDays); err != nil {
@@ -101,10 +101,10 @@ func UpdateReminderSettingByUserIDAndNumber(db *gorm.DB, userId, number uint, na
 }
 
 // DeleteReminderSettingByUserIDAndNumber リマインダー設定削除
-func DeleteReminderSettingByUserIDAndNumber(db *gorm.DB, userId, number uint) error {
+func DeleteReminderSettingByUserIDAndNumber(db *gorm.DB, userID, number uint) error {
 	return models.Transact(db, func(tx *gorm.DB) error {
 		rSet := models.ReminderSetting{}
-		if err := rSet.GetByUserIDAndNumber(tx, userId, number); err != nil {
+		if err := rSet.GetByUserIDAndNumber(tx, userID, number); err != nil {
 			return err
 		}
 		if err := rSet.Delete(tx); err != nil {
