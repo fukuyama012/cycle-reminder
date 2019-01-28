@@ -24,16 +24,13 @@ func Notify(notifyDetail NotifyDetail) error {
 func adjustNotifyContent(db *gorm.DB, notifyDetail *NotifyDetail)  {
 	// メールタイトルが空の場合、補足する
 	if len(notifyDetail.NotifyTitle) == 0 {
-		notifyDetail.NotifyText = "Notify from Cycle Reminder"
+		notifyDetail.NotifyTitle = "Notify from Cycle Reminder"
 	}
 	// 次回通知日付を付加する
 	rSet := models.ReminderSetting{}
 	if err := rSet.GetById(db, notifyDetail.SettingID); err == nil {
-		notifyDetail.NotifyTitle += `
-次回通知日付: ` + rSet.CalculateNotifyDate(time.Now()).Format("2006-01-02")
+		notifyDetail.NotifyText += "\n\n"+ "次回通知予定: " + rSet.CalculateNotifyDate(time.Now()).Format("2006-01-02")
 	}
 	// フッターを付加する
-	notifyDetail.NotifyText += `
-Cycle Reminder
-http://cycle-reminder.com/`
+	notifyDetail.NotifyText += "\n\n"+ "Cycle Reminder" +"\n"+ "http://cycle-reminder.com/"
 }

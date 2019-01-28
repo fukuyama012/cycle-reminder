@@ -50,8 +50,9 @@ func makeMessage(toEmail, subject, content string) (*mail.SGMailV3, error) {
 
 	from := mail.NewEmail("", os.Getenv("SENDGRID_FROM_MAIL"))
 	to := mail.NewEmail("", toEmail)
-	// plain, html同じ内容（暫定）
-	message := mail.NewSingleEmail(from, subject, to, content, content)
+	// 改行が消えるのでtext/htmlは設定しない
+	plainText := mail.NewContent("text/plain", content)
+	message := mail.NewV3MailInit(from, subject, to, plainText)
 	return message, nil
 }
 
