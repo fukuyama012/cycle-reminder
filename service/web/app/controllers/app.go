@@ -6,6 +6,7 @@ import (
 	"os"
 )
 
+// App Revel Controller
 type App struct {
 	*revel.Controller
 }
@@ -33,12 +34,12 @@ func (c App) Terms() revel.Result {
 // getLoginUser ログインユーザー情報取得
 func (c App) getLoginUser() (uint) {
 	// loginチェック
-	userIdSession, ok := c.getUserIdBySession()
+	userIDSession, ok := c.getUserIDBySession()
 	if !ok {
 		// 有効なセッション情報無し
 		return uint(0)
 	}
-	user, err := services.CheckUserID(userIdSession)
+	user, err := services.CheckUserID(userIDSession)
 	if err != nil {
 		// ユーザー登録無し
 		return uint(0)
@@ -46,12 +47,13 @@ func (c App) getLoginUser() (uint) {
 	return user.ID
 }
 
-func (c App) getUserIdBySession() (uint, bool) {
-	userIdSesson, err := c.Session.Get(serviceLoginSession);
+// getUserIDBySession セッションからユーザーID取り出し
+func (c App) getUserIDBySession() (uint, bool) {
+	userIDSesson, err := c.Session.Get(serviceLoginSession);
 	if err != nil {
 		return 0, false
 	}
-	val, ok := userIdSesson.(float64)
+	val, ok := userIDSesson.(float64)
 	if !ok {
 		return 0, false
 	}
