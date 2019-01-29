@@ -70,12 +70,10 @@ func TestCreateReminderSettingWithRelation(t *testing.T) {
 	}{
 		{1, "test name", "test title", "test text", 1, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()),
 			time.Date(2018, time.January, 2, 0, 0, 0, 0, models.GetJSTLocation())},
-		{1, "test name2", "test title2", "test text2", 365, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()),
-			time.Date(2019, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation())},
-		{1, "test name2", "", "test text2", 7, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()),
-			time.Date(2018, time.January, 8, 0, 0, 0, 0, models.GetJSTLocation())},
 		{2, "test name2", "title", "test text2", 31, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()),
 			time.Date(2018, time.February, 1, 0, 0, 0, 0, models.GetJSTLocation())},
+		{1, "test name2", "", "test text2", 7, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()),
+			time.Date(2018, time.January, 8, 0, 0, 0, 0, models.GetJSTLocation())},
 	}
 	for _, tt := range tests {
 		err := models.Transact(models.DB, func(tx *gorm.DB) error {
