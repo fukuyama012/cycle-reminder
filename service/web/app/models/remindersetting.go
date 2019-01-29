@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/jinzhu/gorm"
 	"gopkg.in/go-playground/validator.v9"
-	"log"
 	"time"
 )
 
@@ -22,24 +21,6 @@ type ReminderSetting struct {
 
 func (rSet *ReminderSetting) validate() error {
 	return validator.New().Struct(*rSet)
-}
-
-// 新規リマインダー作成
-func CreateReminderSettingWithNumbering(userID uint, name, notifyTitle, notifyText string, cycleDays uint) (*ReminderSetting, error)  {
-	data, err := TransactAndReceiveData(DB, func(tx *gorm.DB) (i interface{}, e error) {
-		// トランザクション内でnumber値を自動採番
-		number, err := GetReminderSettingsNextNumberForCreate(tx)
-		if err != nil {
-			return nil, err
-		}
-		i, e = CreateReminderSetting(tx, userID, name, notifyTitle, notifyText, cycleDays, number)
-		return
-	})
-	rSet, ok := data.(*ReminderSetting)
-	if !ok {
-		log.Panicf("cant cast ReminderSetting %#v\n", err)
-	}
-	return rSet, err
 }
 
 // 新規リマインダー作成
@@ -116,7 +97,7 @@ func (rSet *ReminderSetting) GetByUserIDAndNumber(db *gorm.DB, userID uint, numb
 	return nil
 }
 
-// 起点日付＋通知間隔日数で日付を算出する 
+// 起点日付＋通知間隔日数で日付を算出する
 func (rSet *ReminderSetting) CalculateNotifyDate(basisDate time.Time) time.Time {
 	return basisDate.AddDate(0, 0, int(rSet.CycleDays))
 }

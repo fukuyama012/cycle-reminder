@@ -54,6 +54,21 @@ func (user *User) GetById(db *gorm.DB, id uint) error {
 	return nil
 }
 
+// GetByIDForUpdate IDで検索（排他トランザクション）
+func (user *User) GetByIDForUpdate(db *gorm.DB, id uint) error {
+	if id == 0 {
+		return errors.New("id is 0, User GetById")
+	}
+	user.ID = id
+	if err := db.Set("gorm:query_option", "FOR UPDATE").First(&user).Error; err != nil {
+		if gorm.IsRecordNotFoundError(err){
+			return gorm.ErrRecordNotFound
+		}
+		return err
+	}
+	return nil
+}
+
 // Eメールで検索
 func (user *User) GetByEmail(db *gorm.DB, email string) error {
 	if err := db.Where("email = ?", email).First(&user).Error; err != nil {

@@ -20,3 +20,10 @@ func RandString(n int) string {
 func GetDB() *gorm.DB {
 	return models.DB
 }
+
+// InitDB DB初期化
+func InitDB()  {
+	if GetDB() == nil {
+		models.InitDB()
+	}
+}

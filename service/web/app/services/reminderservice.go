@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/fukuyama012/cycle-reminder/service/web/app/models"
 	"github.com/jinzhu/gorm"
-	"log"
 	"time"
 )
 
@@ -22,20 +21,23 @@ type ReminderDetail struct {
 	NotifyDate time.Time
 }
 
-// NotifyDetail 通知内容詳細
-type NotifyDetail struct {
-	Email string
-	ID uint
-	NotifyTitle string
-	NotifyText string
+// CreateReminderSettingWithRelationInTransact リマインド設定と紐付くリマインド予定をトランザクション作成
+// basisDate  起点日付　＊基本的にはtime.Now()を指定する事になる
+func CreateReminderSettingWithRelationInTransact(db *gorm.DB, userID uint, name, notifyTitle, notifyText string, cycleDays uint, basisDate time.Time) (error)  {
+	return models.Transact(db, func(tx *gorm.DB) (error) {
+		if _, err := CreateReminderSettingWithRelation(tx, userID, name, notifyTitle, notifyText, cycleDays, basisDate); err != nil {
+			return err
+		}
+		return nil
+	})
 }
 
 // CreateReminderSettingWithRelation リマインド設定と紐付くリマインド予定を作成
 // basisDate  起点日付　＊基本的にはtime.Now()を指定する事になる
 func CreateReminderSettingWithRelation(db *gorm.DB, userID uint, name, notifyTitle, notifyText string, cycleDays uint, basisDate time.Time) (*models.ReminderSetting, error)  {
 	user := models.User{}
-	// トランザクションに含めないとdeadlockする事が有る
-	if err := user.GetById(db, userID); err != nil {
+	// 排他ロック
+	if err := user.GetByIDForUpdate(db, userID); err != nil {
 		return nil, err
 	}
 	// トランザクション内でnumber値を自動採番
@@ -83,10 +85,10 @@ func GetReminderSettingByUserIDAndNumber(db *gorm.DB, UserID, number uint) (*mod
 }
 
 // UpdateReminderSettingByUserIDAndNumber リマインド設定変更
-func UpdateReminderSettingByUserIDAndNumber(db *gorm.DB, userId, number uint, name, notifyTitle, notifyText string, cycleDays uint) (*models.ReminderSetting, error)  {
+func UpdateReminderSettingByUserIDAndNumber(db *gorm.DB, userID, number uint, name, notifyTitle, notifyText string, cycleDays uint) (*models.ReminderSetting, error)  {
 	data, err := models.TransactAndReceiveData(db, func(tx *gorm.DB) (interface{}, error) {
 		rSet := models.ReminderSetting{}
-		if err := rSet.GetByUserIDAndNumber(tx, userId, number); err != nil {
+		if err := rSet.GetByUserIDAndNumber(tx, userID, number); err != nil {
 			return nil, err
 		}
 		if err := rSet.Updates(tx, name, notifyTitle, notifyText, cycleDays); err != nil {
@@ -97,18 +99,14 @@ func UpdateReminderSettingByUserIDAndNumber(db *gorm.DB, userId, number uint, na
 	if err != nil {
 		return nil, err
 	}
-	rSet, ok := data.(*models.ReminderSetting)
-	if !ok {
-		log.Panicf("cant cast UpdateReminderSettingByUserIDAndNumber %#v\n", err)
-	}
-	return rSet, nil
+	return data.(*models.ReminderSetting), nil
 }
 
 // DeleteReminderSettingByUserIDAndNumber リマインダー設定削除
-func DeleteReminderSettingByUserIDAndNumber(db *gorm.DB, userId, number uint) error {
+func DeleteReminderSettingByUserIDAndNumber(db *gorm.DB, userID, number uint) error {
 	return models.Transact(db, func(tx *gorm.DB) error {
 		rSet := models.ReminderSetting{}
-		if err := rSet.GetByUserIDAndNumber(tx, userId, number); err != nil {
+		if err := rSet.GetByUserIDAndNumber(tx, userID, number); err != nil {
 			return err
 		}
 		if err := rSet.Delete(tx); err != nil {
@@ -120,14 +118,14 @@ func DeleteReminderSettingByUserIDAndNumber(db *gorm.DB, userId, number uint) er
 
 // GetRemindersReachedNotifyDate 通知日付に達した全リマインド予定の通知内容取得
 // メール通知処理等で利用
-func GetRemindersReachedNotifyDate(db *gorm.DB, targetDate time.Time, limit, offset int) ([]NotifyDetail, error) {
+func GetRemindersReachedNotifyDate(db *gorm.DB, targetDate time.Time, reminderScheduleID uint, limit int) ([]NotifyDetail, error) {
 	var result []NotifyDetail
-	if err := db.Table("reminder_schedules").Select("reminder_schedules.id, users.email, reminder_settings.notify_title, reminder_settings.notify_text").
+	if err := db.Table("reminder_schedules").Select("reminder_settings.id AS setting_id, reminder_schedules.id AS schedule_id, users.email, reminder_settings.notify_title, reminder_settings.notify_text").
 		Joins("INNER JOIN reminder_settings ON reminder_schedules.reminder_setting_id = reminder_settings.id").
 		Joins("INNER JOIN users ON reminder_settings.user_id = users.id").
-		Where("reminder_schedules.notify_date <= ?", targetDate.Format("2006-01-02")).
+		Where("reminder_schedules.notify_date <= ? AND reminder_schedules.id > ?", targetDate.Format("2006-01-02"), reminderScheduleID).
 		Order("reminder_schedules.id", true).
-		Limit(limit).Offset(offset).
+		Limit(limit).
 		Scan(&result).Error; err != nil {
 		return nil, err
 	}
@@ -136,21 +134,14 @@ func GetRemindersReachedNotifyDate(db *gorm.DB, targetDate time.Time, limit, off
 
 // ResetReminderScheduleAfterNotify メール通知完了後の次回通知予定設定
 // basisDate  起点日付　＊基本的にはtime.Now()を指定する事になる
-func ResetReminderScheduleAfterNotify(reminderSettingID uint, basisDate time.Time) error {
-	err := models.Transact(models.DB, func(tx *gorm.DB) error {
-		rSet := models.ReminderSetting{}
-		if err := rSet.GetById(tx, reminderSettingID); err != nil {
-			return err
-		}
-		rSch := models.ReminderSchedule{}
-		if err := rSch.GetByReminderSetting(tx, rSet); err != nil {
-			return err
-		}
-		// 次回通知日付を起点日付から指定日数後に設定
-		if err := rSch.UpdateNotifyDateDaysAfterBasis(tx, basisDate, rSet.CycleDays); err != nil {
-			return err
-		}
-		return nil
-	})
-	return err
+func ResetReminderScheduleAfterNotify(db *gorm.DB, rSet models.ReminderSetting, basisDate time.Time) error {
+	rSch := models.ReminderSchedule{}
+	if err := rSch.GetByReminderSetting(db, rSet); err != nil {
+		return err
+	}
+	// 次回通知日付を起点日付から指定日数後に設定
+	if err := rSch.UpdateNotifyDateDaysAfterBasis(db, basisDate, rSet.CycleDays); err != nil {
+		return err
+	}
+	return nil
 }
