@@ -30,8 +30,8 @@ func TestCreateReminderSettingWithRelation(t *testing.T) {
 		{2, "test name2", "title", "test text2", 31, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()),
 			time.Date(2018, time.February, 1, 0, 0, 0, 0, models.GetJSTLocation())},
 	}
-	err := models.Transact(models.DB, func(tx *gorm.DB) error {
-		for _, tt := range tests {
+	for _, tt := range tests {
+		err := models.Transact(models.DB, func(tx *gorm.DB) error {
 			rSet, err := services.CreateReminderSettingWithRelation(tx, tt.UserID, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays, tt.BasisDate)
 			if err != nil {
 				return err
@@ -48,10 +48,10 @@ func TestCreateReminderSettingWithRelation(t *testing.T) {
 			assert.NotNil(t, rSet)
 			assert.NotEqual(t, uint(0), rSet.ID)
 			assert.Equal(t, tt.Name ,rSet.Name)
-		}
-		return nil
-	})
-	assert.Nil(t, err)
+			return nil
+		})
+		assert.Nil(t, err)
+	}
 }
 
 // リマインド設定と紐付くリマインド予定を作成エラー
@@ -112,22 +112,16 @@ func TestGetReminderListByUser(t *testing.T) {
 		{1, "name3", 60, time.Date(2099, time.July, 15, 0, 0, 0, 0, models.GetJSTLocation()), 2, 2, 1},
 		{1, "name3", 60, time.Date(2099, time.July, 15, 0, 0, 0, 0, models.GetJSTLocation()), 1, 2, 1},
 	}
-	err := models.Transact(models.DB, func(tx *gorm.DB) error {
-		for _, tt := range tests {
-			reminderList, errList := services.GetReminderListByUserID(tx, tt.UserID, tt.Limit, tt.Offset)
-			if errList != nil {
-				return errList
-			}
-			// limitとoffsetの兼ね合いで最大数決まる
-			assert.Equal(t, tt.OutLen, len(reminderList))
-			assert.Equal(t, tt.UserID, reminderList[0].UserID)
-			assert.Equal(t, tt.Name, reminderList[0].Name)
-			assert.Equal(t, tt.CycleDays, reminderList[0].CycleDays)
-			assert.Equal(t, tt.NotifyDate, reminderList[0].NotifyDate)
-		}
-		return nil
-	})
-	assert.Nil(t, err)
+	for _, tt := range tests {
+		reminderList, err := services.GetReminderListByUserID(models.DB, tt.UserID, tt.Limit, tt.Offset)
+		assert.Nil(t, err)
+		// limitとoffsetの兼ね合いで最大数決まる
+		assert.Equal(t, tt.OutLen, len(reminderList))
+		assert.Equal(t, tt.UserID, reminderList[0].UserID)
+		assert.Equal(t, tt.Name, reminderList[0].Name)
+		assert.Equal(t, tt.CycleDays, reminderList[0].CycleDays)
+		assert.Equal(t, tt.NotifyDate, reminderList[0].NotifyDate)
+	}
 }
 
 // GetReminderListByUserID ユーザー情報からリマインド一覧取得

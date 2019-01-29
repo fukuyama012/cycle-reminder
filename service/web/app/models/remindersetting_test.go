@@ -8,57 +8,7 @@ import (
 	"time"
 )
 
-func TestCreateReminderSettingWithNumbering(t *testing.T) {
-	prepareTestDB()
-	tests := []struct {
-		UserID uint
-		Name string
-		NotifyTitle string
-		NotifyText string
-		CycleDays uint
-	}{
-		{1, "test name", "test title", "test text", 1},
-		{1, "test name2", "test title2", "test text2", 365},
-		{1, "test name2", "", "test text2", 7},
-		{2, "test name2", "title", "test text2", 7},
-	}
-	for _, tt := range tests {
-		rSet, err := models.CreateReminderSettingWithNumbering(tt.UserID, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays)
-		assert.Nil(t, err)
-		// リマインダーが正常に設定されている
-		assert.NotNil(t, rSet)
-		assert.NotEqual(t, uint(0), rSet.ID)
-	}
-}
-
-// 新規ユーザー作成 エラー
-func TestCreateReminderSettingWithNumberingError(t *testing.T) {
-	prepareTestDB()
-	tests := []struct {
-		UserID uint
-		Name string
-		NotifyTitle string
-		NotifyText string
-		CycleDays uint
-	}{
-		{9999, "name", "test title", "test text", 1}, // 空user
-		{1, "", "test title", "test text", 1}, // name無し
-		// name 最大長超え
-		{1, "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", "title", "test text2", 7},
-		{1, "test name", "test title", "", 365}, // テキスト無し
-		// タイトル最大長超え
-		{1, "name", "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", "test text2", 7},
-		{1, "test name", "test title", "text", 0}, // リマインド日数0
-		{1, "test name", "test title", "text", 366}, // リマインド日数最大値超え
-	}
-	for _, tt := range tests {
-		rSet, err := models.CreateReminderSettingWithNumbering(tt.UserID, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays)
-		// リマインダーが正常に設定されていない
-		assert.Error(t, err)
-		assert.Nil(t, rSet)
-	}
-}
-
+// 新規リマインド設定作成
 func TestCreateReminderSetting(t *testing.T) {
 	prepareTestDB()
 	tests := []struct {
@@ -83,7 +33,7 @@ func TestCreateReminderSetting(t *testing.T) {
 	}
 }
 
-// 新規ユーザー作成 エラー
+// 新規リマインド設定作成 エラー
 func TestCreateReminderSettingError(t *testing.T) {
 	prepareTestDB()
 	tests := []struct {
