@@ -9,6 +9,54 @@ import (
 	"time"
 )
 
+// リマインド設定と紐付くリマインド予定をトランザクション作成
+func TestCreateReminderSettingWithRelationInTransact(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		UserID uint
+		Name string
+		NotifyTitle string
+		NotifyText string
+		CycleDays uint
+		BasisDate time.Time
+	}{
+		{1, "test name", "test title", "test text", 1, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation())},
+		{1, "test name2", "test title2", "test text2", 365, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation())},
+		{1, "test name2", "", "test text2", 7, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation())},
+		{2, "test name2", "title", "test text2", 31, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation())},
+	}
+	for _, tt := range tests {
+		err := services.CreateReminderSettingWithRelationInTransact(models.DB, tt.UserID, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays, tt.BasisDate)
+		assert.Nil(t, err)
+	}
+}
+
+// リマインド設定と紐付くリマインド予定をトランザクション作成エラー
+func TestCreateReminderSettingWithRelationInTransactError(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		UserID uint
+		Name string
+		NotifyTitle string
+		NotifyText string
+		CycleDays uint
+		BasisDate time.Time
+	}{
+		// name無し
+		{1, "", "test title", "test text", 1, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation())},
+		//　NotifyText無し
+		{1, "test name2", "test title2", "", 365, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation())},
+		// User無し
+		{9999, "test name2", "", "test text2", 7, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation())},
+		// CycleDaysが0
+		{2, "test name2", "title", "test text2", 0, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation())},
+	}
+	for _, tt := range tests {
+		err := services.CreateReminderSettingWithRelationInTransact(models.DB, tt.UserID, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays, tt.BasisDate)
+		assert.Error(t, err)
+	}
+}
+
 // リマインド設定と紐付くリマインド予定を作成
 func TestCreateReminderSettingWithRelation(t *testing.T) {
 	prepareTestDB()

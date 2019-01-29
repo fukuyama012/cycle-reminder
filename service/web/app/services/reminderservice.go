@@ -21,6 +21,17 @@ type ReminderDetail struct {
 	NotifyDate time.Time
 }
 
+// CreateReminderSettingWithRelationInTransact リマインド設定と紐付くリマインド予定をトランザクション作成
+// basisDate  起点日付　＊基本的にはtime.Now()を指定する事になる
+func CreateReminderSettingWithRelationInTransact(db *gorm.DB, userID uint, name, notifyTitle, notifyText string, cycleDays uint, basisDate time.Time) (error)  {
+	return models.Transact(db, func(tx *gorm.DB) (error) {
+		if _, err := CreateReminderSettingWithRelation(tx, userID, name, notifyTitle, notifyText, cycleDays, basisDate); err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
 // CreateReminderSettingWithRelation リマインド設定と紐付くリマインド予定を作成
 // basisDate  起点日付　＊基本的にはtime.Now()を指定する事になる
 func CreateReminderSettingWithRelation(db *gorm.DB, userID uint, name, notifyTitle, notifyText string, cycleDays uint, basisDate time.Time) (*models.ReminderSetting, error)  {

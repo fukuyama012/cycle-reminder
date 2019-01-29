@@ -20,7 +20,7 @@ func (c Reminders) Index() revel.Result {
 		// 未ログイン TOP LPへ
 		return c.Redirect(routes.App.Index())
 	}
-	
+
 	rlist, err := services.GetReminderListByUserID(services.GetDB(), userID, 100, 0)
 	if err != nil {
 		c.Log.Errorf("Index GetReminderListByUserID %#v", err)
@@ -37,7 +37,7 @@ func (c Reminders) UpdatePrepare(number int) revel.Result {
 		// 未ログイン TOP LPへ
 		return c.Redirect(routes.App.Index())
 	}
-	
+
 	rSet, err := services.GetReminderSettingByUserIDAndNumber(services.GetDB(), userID, uint(number))
 	if err != nil {
 		// 変更対象存在しない
@@ -107,10 +107,10 @@ func (c Reminders) Create() revel.Result {
 		return c.Render(result, isLogin)
 	}
 	// 登録処理
-	_, err := services.CreateReminderSettingWithRelation(services.GetDB(), userID, c.Params.Get("name"),
-		c.Params.Get("notify_title"), c.Params.Get("notify_text"), uint(cycle_days), time.Now())
-	if err != nil {
-		c.Log.Errorf("Create() CreateReminderSettingWithRelation %#v", err)
+	if err := services.CreateReminderSettingWithRelationInTransact(services.GetDB(), userID, c.Params.Get("name"),
+		c.Params.Get("notify_title"), c.Params.Get("notify_text"), uint(cycle_days), time.Now());
+	err != nil {
+		c.Log.Errorf("CreateReminderSettingWithRelationInTransact %#v", err)
 		return c.Render(result, isLogin)
 	}
 	// （成功）リスト画面へ
@@ -125,7 +125,7 @@ func (c Reminders) Delete(number int) revel.Result {
 		// 未ログイン TOP LPへ
 		return c.Redirect(routes.App.Index())
 	}
-	
+
 	// TODO 後ほど整理する。。
 	isLogin := true
 	result := "削除失敗！"
@@ -134,6 +134,6 @@ func (c Reminders) Delete(number int) revel.Result {
 		return c.Render(result, isLogin)
 	}
 	// （成功）リスト画面へ
-	return c.Redirect(routes.Reminders.Index())	
+	return c.Redirect(routes.Reminders.Index())
 }
 
