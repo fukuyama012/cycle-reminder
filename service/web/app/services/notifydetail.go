@@ -25,14 +25,16 @@ type NotifyDetail struct {
 
 // Send　メール送信し次回通知日付を更新
 func (notifyDetail NotifyDetail) Send() error {
-	if err := notifyDetail.sendCore(GetDB()); err != nil {
-		return err
-	}
-	// 送信成功したら本日を起点に次回通知日付更新
-	if err := ResetReminderScheduleAfterNotify(notifyDetail.SettingID, time.Now()); err != nil {
-		return err
-	}
-	return nil
+	return models.Transact(GetDB(), func(tx *gorm.DB) error {
+		if err := notifyDetail.sendCore(tx); err != nil {
+			return err
+		}
+		// 送信成功したら本日を起点に次回通知日付更新
+		if err := ResetReminderScheduleAfterNotify(tx, notifyDetail.SettingID, time.Now()); err != nil {
+			return err
+		}
+		return nil
+	})
 }
 
 // sendCore NotifyDetailを元にメール送信し結果確認

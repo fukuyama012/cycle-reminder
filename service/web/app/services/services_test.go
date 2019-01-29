@@ -38,7 +38,7 @@ func prepareTestDB() {
 		log.Fatal(err)
 	}
 	// CIで投入情報反映がテストに間に合わない(?)場合が有るので少し処理を待つ
-	time.Sleep(50 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 }
 
 func tearDownAfter()  {
