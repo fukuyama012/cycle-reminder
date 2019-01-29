@@ -36,8 +36,8 @@ func CreateReminderSettingWithRelationInTransact(db *gorm.DB, userID uint, name,
 // basisDate  起点日付　＊基本的にはtime.Now()を指定する事になる
 func CreateReminderSettingWithRelation(db *gorm.DB, userID uint, name, notifyTitle, notifyText string, cycleDays uint, basisDate time.Time) (*models.ReminderSetting, error)  {
 	user := models.User{}
-	// トランザクションに含めないとdeadlockする事が有る
-	if err := user.GetById(db, userID); err != nil {
+	// 排他ロック
+	if err := user.GetByIDForUpdate(db, userID); err != nil {
 		return nil, err
 	}
 	// トランザクション内でnumber値を自動採番

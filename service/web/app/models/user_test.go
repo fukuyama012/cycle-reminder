@@ -124,6 +124,72 @@ func TestUser_GetByIdError(t *testing.T)  {
 	}
 }
 
+// IDで検索(排他ロック)
+func TestUser_GetByIDForUpdate(t *testing.T) {
+	prepareTestDB()
+	tests := []struct {
+		in  uint
+		out string
+	}{
+		{1, "test1@example.com"},
+	}
+	for _, tt := range tests {
+		err := models.Transact(models.DB, func(db *gorm.DB) error {
+			user := models.User{}
+			if err := user.GetByIDForUpdate(models.DB, tt.in); err != nil{
+				return err
+			}
+			if user.Email != tt.out {
+				assert.Equal(t, tt.out, user.Email)
+			}
+			return nil
+		})
+		assert.Nil(t, err)
+	}
+}
+
+// IDで検索　対象レコード無し(排他ロック)
+func TestUser_GetByIDForUpdateNotFound(t *testing.T)  {
+	var assertT = assert.New(t)
+	tests := []struct {
+		in  uint
+	}{
+		{999},
+		{12345},
+	}
+	for _, tt := range tests {
+		err := models.Transact(models.DB, func(db *gorm.DB) error {
+			user := models.User{}
+			err := user.GetByIDForUpdate(models.DB, tt.in);
+			assertT.Equal(gorm.ErrRecordNotFound, err)
+			assert.Equal(t, "", user.Email)
+			assert.Equal(t, tt.in, user.ID)
+			return err
+		})
+		assert.Error(t, err)
+	}
+}
+
+// IDで検索　エラー(排他ロック)
+func TestUser_GetByIDForUpdateError(t *testing.T)  {
+	var assertT = assert.New(t)
+	tests := []struct {
+		in  uint
+	}{
+		{0},
+	}
+	for _, tt := range tests {
+		err := models.Transact(models.DB, func(db *gorm.DB) error {
+			user := models.User{}
+			err := user.GetByIDForUpdate(models.DB, tt.in);
+			assertT.Equal("", user.Email)
+			assertT.Equal(tt.in, user.ID)
+			return err
+		})
+		assert.Error(t, err)
+	}
+}
+
 // Eメール検索
 func TestUser_GetByEmail(t *testing.T) {
 	tests := []struct {
