@@ -52,17 +52,13 @@ func sendMailTargetNotifyDetails(notifyDetails []services.NotifyDetail) (uint, i
 	sendCount := 0
 	for _, notifyDetail := range notifyDetails {
 		scheduleID = notifyDetail.ScheduleID
-		if err := services.Notify(notifyDetail); err != nil {
-			logError("sendMailCore ScheduleID [%d] %#v", notifyDetail.ScheduleID, err)
+		// 外部API利用で問題発生をなるべく防ぐ為に余裕を持って送信する
+		time.Sleep(500 * time.Millisecond)
+		if err := notifyDetail.Send(); err != nil {
+			logError("NotifyDetail Send ScheduleID [%d] %#v", notifyDetail.ScheduleID, err)
 			continue
 		}
-		// 送信成功したら本日を起点に次回通知日付更新
-		if err := services.ResetReminderScheduleAfterNotify(notifyDetail.SettingID, time.Now()); err != nil {
-			logError("ResetReminderScheduleAfterNotify ScheduleID [%d]", notifyDetail.ScheduleID)
-		}
 		sendCount++
-		// 余裕を持って送信する
-		time.Sleep(500 * time.Millisecond)
 	}
 	return scheduleID, sendCount
 }

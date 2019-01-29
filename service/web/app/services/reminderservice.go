@@ -21,15 +21,6 @@ type ReminderDetail struct {
 	NotifyDate time.Time
 }
 
-// NotifyDetail 通知内容詳細
-type NotifyDetail struct {
-	Email string
-	SettingID uint
-	ScheduleID uint
-	NotifyTitle string
-	NotifyText string
-}
-
 // CreateReminderSettingWithRelation リマインド設定と紐付くリマインド予定を作成
 // basisDate  起点日付　＊基本的にはtime.Now()を指定する事になる
 func CreateReminderSettingWithRelation(db *gorm.DB, userID uint, name, notifyTitle, notifyText string, cycleDays uint, basisDate time.Time) (*models.ReminderSetting, error)  {
