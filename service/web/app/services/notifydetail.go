@@ -26,11 +26,15 @@ type NotifyDetail struct {
 // Send　メール送信し次回通知日付を更新
 func (notifyDetail NotifyDetail) Send() error {
 	return models.Transact(GetDB(), func(tx *gorm.DB) error {
-		if err := notifyDetail.sendCore(tx); err != nil {
+		rSet := models.ReminderSetting{}
+		if err := rSet.GetById(tx, notifyDetail.SettingID); err != nil {
+			return err
+		}
+		if err := notifyDetail.sendCore(rSet); err != nil {
 			return err
 		}
 		// 送信成功したら本日を起点に次回通知日付更新
-		if err := ResetReminderScheduleAfterNotify(tx, notifyDetail.SettingID, time.Now()); err != nil {
+		if err := ResetReminderScheduleAfterNotify(tx, rSet, time.Now()); err != nil {
 			return err
 		}
 		return nil
@@ -38,8 +42,8 @@ func (notifyDetail NotifyDetail) Send() error {
 }
 
 // sendCore NotifyDetailを元にメール送信し結果確認
-func (notifyDetail NotifyDetail) sendCore(db *gorm.DB) error {
-	notifyDetail.supplementContent(db)
+func (notifyDetail NotifyDetail) sendCore(rSet models.ReminderSetting) error {
+	notifyDetail.supplementContent(rSet)
 	response, err := SendMail(notifyDetail.Email, notifyDetail.NotifyTitle, notifyDetail.NotifyText)
 	if err != nil {
 		return err
@@ -51,16 +55,13 @@ func (notifyDetail NotifyDetail) sendCore(db *gorm.DB) error {
 }
 
 // supplementContent　通知情報補足
-func (notifyDetail *NotifyDetail) supplementContent(db *gorm.DB)  {
+func (notifyDetail *NotifyDetail) supplementContent(rSet models.ReminderSetting)  {
 	// メールタイトルが空の場合、補足する
 	if len(notifyDetail.NotifyTitle) == 0 {
 		notifyDetail.NotifyTitle = supplementNotifyTitle
 	}
 	// 次回通知日付を付加する
-	rSet := models.ReminderSetting{}
-	if err := rSet.GetById(db, notifyDetail.SettingID); err == nil {
-		notifyDetail.NotifyText += "\n\n"+ supplementNextDate + rSet.CalculateNotifyDate(time.Now()).Format("2006-01-02")
-	}
+	notifyDetail.NotifyText += "\n\n"+ supplementNextDate + rSet.CalculateNotifyDate(time.Now()).Format("2006-01-02")
 	// フッターを付加する
 	notifyDetail.NotifyText += "\n\n"+ supplementSiteName +"\n"+ supplementSiteURL
 }

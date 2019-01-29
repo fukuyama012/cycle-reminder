@@ -271,14 +271,18 @@ func TestResetReminderScheduleAfterNotify(t *testing.T) {
 	}
 	for _, tt := range tests {
 		err := models.Transact(models.DB, func(tx *gorm.DB) error {
-			err := services.ResetReminderScheduleAfterNotify(tx, tt.ReminderSettingID, tt.BasisDate)
-
 			rSet := models.ReminderSetting{}
-			errSet := rSet.GetById(tx, tt.ReminderSettingID)
+			if err := rSet.GetById(tx, tt.ReminderSettingID); err != nil {
+				return err
+			}
+			err := services.ResetReminderScheduleAfterNotify(tx, rSet, tt.BasisDate)
+
+			rSetCheck := models.ReminderSetting{}
+			errSet := rSetCheck.GetById(tx, tt.ReminderSettingID)
 			assert.Nil(t, errSet)
 			// リマインド予定の次回通知日付が正しい
 			rSch := models.ReminderSchedule{}
-			errSch := rSch.GetByReminderSetting(tx, rSet)
+			errSch := rSch.GetByReminderSetting(tx, rSetCheck)
 			assert.Nil(t, errSch)
 			assert.Equal(t, tt.NotifyDate, rSch.NotifyDate.Format("2006-01-02"))
 			return err
@@ -296,30 +300,17 @@ func TestResetReminderScheduleAfterNotifyRecordNotFound(t *testing.T) {
 		BasisDate time.Time
 	}{
 		{99999, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation())},
-	}
-	for _, tt := range tests {
-		err := models.Transact(models.DB, func(tx *gorm.DB) error {
-			err := services.ResetReminderScheduleAfterNotify(tx, tt.ReminderSettingID, tt.BasisDate)
-			assert.Equal(t, gorm.ErrRecordNotFound, err)
-			return err
-		})
-		assert.Error(t, err)
-	}
-}
-
-// ResetReminderScheduleAfterNotify メール通知完了後の次回通知予定設定
-func TestResetReminderScheduleAfterNotifyError(t *testing.T) {
-	prepareTestDB()
-	tests := []struct {
-		ReminderSettingID uint
-		BasisDate time.Time
-	}{
-		// 無効ID指定
 		{0, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation())},
 	}
 	for _, tt := range tests {
 		err := models.Transact(models.DB, func(tx *gorm.DB) error {
-			return services.ResetReminderScheduleAfterNotify(tx, tt.ReminderSettingID, tt.BasisDate)
+			rSet := models.ReminderSetting{}
+			errSch := rSet.GetById(tx, tt.ReminderSettingID)
+			assert.Error(t, errSch)
+
+			err := services.ResetReminderScheduleAfterNotify(tx, rSet, tt.BasisDate)
+			assert.Equal(t, gorm.ErrRecordNotFound, err)
+			return err
 		})
 		assert.Error(t, err)
 	}

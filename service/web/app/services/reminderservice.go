@@ -134,11 +134,7 @@ func GetRemindersReachedNotifyDate(db *gorm.DB, targetDate time.Time, reminderSc
 
 // ResetReminderScheduleAfterNotify メール通知完了後の次回通知予定設定
 // basisDate  起点日付　＊基本的にはtime.Now()を指定する事になる
-func ResetReminderScheduleAfterNotify(db *gorm.DB, reminderSettingID uint, basisDate time.Time) error {
-	rSet := models.ReminderSetting{}
-	if err := rSet.GetById(db, reminderSettingID); err != nil {
-		return err
-	}
+func ResetReminderScheduleAfterNotify(db *gorm.DB, rSet models.ReminderSetting, basisDate time.Time) error {
 	rSch := models.ReminderSchedule{}
 	if err := rSch.GetByReminderSetting(db, rSet); err != nil {
 		return err
