@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// Reminders is App
 type Reminders struct {
 	App
 }
@@ -49,7 +50,7 @@ func (c Reminders) UpdatePrepare(number int) revel.Result {
 	return c.Render(userID, isLogin, rSet)
 }
 
-// UpdatePrepare リマインダー変更
+// Update リマインダー変更
 func (c Reminders) Update(number int) revel.Result {
 	// loginチェック
 	userID := c.getLoginUser()
@@ -61,14 +62,14 @@ func (c Reminders) Update(number int) revel.Result {
 	// TODO 後ほど整理する。。
 	isLogin := true
 	result := "変更失敗！"
-	cycle_days, errCast := strconv.Atoi(c.Params.Get("cycle_days"))
+	cycleDays, errCast := strconv.Atoi(c.Params.Get("cycle_days"))
 	if errCast != nil {
-		c.Log.Errorf("cant cask cycle_days %#v", errCast)
+		c.Log.Errorf("cant cask cycleDays %#v", errCast)
 		return c.Render(result, isLogin)
 	}
 	// 変更処理
 	_, err := services.UpdateReminderSettingByUserIDAndNumber(services.GetDB(), userID, uint(number), c.Params.Get("name"),
-		c.Params.Get("notify_title"), c.Params.Get("notify_text"), uint(cycle_days))
+		c.Params.Get("notify_title"), c.Params.Get("notify_text"), uint(cycleDays))
 	if err != nil {
 		c.Log.Errorf("Update() UpdateReminderSettingByUserIDAndNumber %#v", err)
 		return c.Render(result, isLogin)
@@ -101,14 +102,14 @@ func (c Reminders) Create() revel.Result {
 	// TODO 後ほど整理する。。
 	isLogin := true
 	result := "登録失敗！"
-	cycle_days, errCast := strconv.Atoi(c.Params.Get("cycle_days"))
+	cycleDays, errCast := strconv.Atoi(c.Params.Get("cycle_days"))
 	if errCast != nil {
 		c.Log.Errorf("cant cask cycle_days %#v", errCast)
 		return c.Render(result, isLogin)
 	}
 	// 登録処理
 	if err := services.CreateReminderSettingWithRelationInTransact(services.GetDB(), userID, c.Params.Get("name"),
-		c.Params.Get("notify_title"), c.Params.Get("notify_text"), uint(cycle_days), time.Now());
+		c.Params.Get("notify_title"), c.Params.Get("notify_text"), uint(cycleDays), time.Now());
 	err != nil {
 		c.Log.Errorf("CreateReminderSettingWithRelationInTransact %#v", err)
 		return c.Render(result, isLogin)

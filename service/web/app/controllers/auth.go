@@ -11,11 +11,12 @@ const (
 	serviceLoginSession = "service_login_session"
 )
 
+// Auth is App
 type Auth struct {
 	App
 }
 
-// TOPページ　セッション有ればアプリへ 無ければLPへ
+// Index TOPページ　セッション有ればアプリへ 無ければLPへ
 func (c Auth) Index() revel.Result {
 	// loginチェック
 	_, err := c.Session.Get(serviceLoginSession);
@@ -26,7 +27,7 @@ func (c Auth) Index() revel.Result {
 	return c.Redirect(routes.Reminders.Index())
 }
 
-// oauth認証する
+// Login oauth認証する
 func (c Auth) Login() revel.Result {
 	key := services.RandString(10)
 
@@ -35,7 +36,7 @@ func (c Auth) Login() revel.Result {
 	return c.Redirect(url)
 }
 
-// GoogleからのCallback処理 成功時セッション保存しアプリへ
+// Callback GoogleからのCallback処理 成功時セッション保存しアプリへ
 func (c Auth) Callback() revel.Result {
 	if !c.isValidCallbackSession() {
 		return c.Redirect(routes.App.Index())
@@ -53,13 +54,13 @@ func (c Auth) Callback() revel.Result {
 		return c.Redirect(routes.App.Index())
 	}
 
-	userId, err := services.GetUserIDOrCreateUserID(oauthInfo.Email)
+	userID, err := services.GetUserIDOrCreateUserID(oauthInfo.Email)
 	if err != nil {
-		c.Log.Errorf("get or create userId, %#v", err)
+		c.Log.Errorf("get or create userID, %#v", err)
 		return c.Redirect(routes.App.Index())
 	}
 
-	c.Session[serviceLoginSession] = userId
+	c.Session[serviceLoginSession] = userID
 	return c.Redirect(routes.Reminders.Index())
 }
 
@@ -82,7 +83,7 @@ func (c Auth) isValidCallbackSession() bool  {
 	return true
 }
 
-// ログアウト処理　セッション削除
+// Logout ログアウト処理　セッション削除
 func (c Auth) Logout() revel.Result {
 	for k := range c.Session {
 		delete(c.Session, k)

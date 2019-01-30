@@ -23,7 +23,7 @@ type NotifyDetail struct {
 	NotifyText string
 }
 
-// Send　メール送信し次回通知日付を更新
+// Send メール送信し次回通知日付を更新
 func (notifyDetail NotifyDetail) Send() error {
 	return models.Transact(GetDB(), func(tx *gorm.DB) error {
 		rSet := models.ReminderSetting{}
