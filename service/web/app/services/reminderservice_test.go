@@ -21,8 +21,6 @@ func TestCreateReminderSettingWithRelationInTransact(t *testing.T) {
 		BasisDate time.Time
 	}{
 		{1, "test name", "test title", "test text", 1, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation())},
-		{2, "test name2", "title", "test text2", 31, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation())},
-		{1, "test name2", "", "test text2", 7, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation())},
 	}
 	for _, tt := range tests {
 		err := services.CreateReminderSettingWithRelationInTransact(models.DB, tt.UserID, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays, tt.BasisDate)
@@ -75,8 +73,8 @@ func TestCreateReminderSettingWithRelation(t *testing.T) {
 		{1, "test name2", "", "test text2", 7, time.Date(2018, time.January, 1, 0, 0, 0, 0, models.GetJSTLocation()),
 			time.Date(2018, time.January, 8, 0, 0, 0, 0, models.GetJSTLocation())},
 	}
-	for _, tt := range tests {
-		err := models.Transact(models.DB, func(tx *gorm.DB) error {
+	err := models.Transact(models.DB, func(tx *gorm.DB) error {
+		for _, tt := range tests {
 			rSet, err := services.CreateReminderSettingWithRelation(tx, tt.UserID, tt.Name, tt.NotifyTitle, tt.NotifyText, tt.CycleDays, tt.BasisDate)
 			if err != nil {
 				return err
@@ -93,10 +91,10 @@ func TestCreateReminderSettingWithRelation(t *testing.T) {
 			assert.NotNil(t, rSet)
 			assert.NotEqual(t, uint(0), rSet.ID)
 			assert.Equal(t, tt.Name ,rSet.Name)
-			return nil
-		})
-		assert.Nil(t, err)
-	}
+		}
+		return nil
+	})
+	assert.Nil(t, err)
 }
 
 // リマインド設定と紐付くリマインド予定を作成エラー
