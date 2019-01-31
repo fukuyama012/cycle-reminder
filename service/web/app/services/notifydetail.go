@@ -8,10 +8,10 @@ import (
 )
 
 const (
-	supplementNotifyTitle = "Send from Cycle Reminder"
+	supplementNotifyTitle = "Cycle Reminder Info"
 	supplementNextDate    = "次回通知予定: "
 	supplementSiteName    = "Cycle Reminder"
-	supplementSiteURL     = "http://cycle-reminder.com/"
+	supplementSiteURL     = "https://cycle-reminder.com/"
 )
 
 // NotifyDetail 通知内容詳細
