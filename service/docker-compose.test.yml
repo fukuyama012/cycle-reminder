@@ -9,7 +9,6 @@ services:
     env_file: .env.test
     environment:
       TZ: Asia/Tokyo
-      VIRTUAL_HOST: ${DOMAIN} # ホストの環境変数にドメイン名を設定しておく
     depends_on:
       - db
     restart: always
