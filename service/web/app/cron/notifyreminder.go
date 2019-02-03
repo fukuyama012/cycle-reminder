@@ -12,7 +12,6 @@ var Logger = log.New(os.Stdout, "", log.LstdFlags)
 
 
 // コンテナ外部のcronからファイル指定実行する
-// docker-compose exec web go run app/cron/notifyreminder.go
 func main()  {
 	services.InitDB()
 	doNotifyReminder()
