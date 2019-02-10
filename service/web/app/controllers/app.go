@@ -9,42 +9,40 @@ import (
 // App Revel Controller
 type App struct {
 	*revel.Controller
+	UserInfo struct {
+		ID uint
+		IsLogin bool
+	}
 }
 
 // Index TOPページ
 func (c App) Index() revel.Result {
-	userID := c.getLoginUser()
-	isLogin := false
-	if userID != uint(0) {
-		isLogin = true
-	}
-	return c.Render(isLogin)
+	return c.Render()
 }
 
 // Terms 利用規約
 func (c App) Terms() revel.Result {
-	userID := c.getLoginUser()
-	isLogin := false
-	if userID != uint(0) {
-		isLogin = true
-	}
-	return c.Render(isLogin)
+	return c.Render()
 }
 
-// getLoginUser ログインユーザー情報取得
-func (c App) getLoginUser() (uint) {
+// getLoginInfo ログイン情報取得
+func (c *App) getLoginInfo() revel.Result {
+	c.UserInfo.IsLogin = false
+	c.UserInfo.ID = uint(0)
 	// loginチェック
 	userIDSession, ok := c.getUserIDBySession()
 	if !ok {
 		// 有効なセッション情報無し
-		return uint(0)
+		return nil
 	}
 	user, err := services.CheckUserID(userIDSession)
 	if err != nil {
 		// ユーザー登録無し
-		return uint(0)
+		return nil
 	}
-	return user.ID
+	c.UserInfo.IsLogin = true
+	c.UserInfo.ID = user.ID
+	return nil
 }
 
 // getUserIDBySession セッションからユーザーID取り出し
@@ -63,5 +61,6 @@ func (c App) getUserIDBySession() (uint, bool) {
 // setCommonToView　Viewに共通情報を設定
 func (c App) setCommonToView() revel.Result {
 	c.ViewArgs["googleAnalytics"] = os.Getenv("GOOGLE_ANALYTICS")
+	c.ViewArgs["isLogin"] = c.UserInfo.IsLogin
 	return nil
 }

@@ -16,12 +16,9 @@ type Auth struct {
 	App
 }
 
-// Index TOPページ　セッション有ればアプリへ 無ければLPへ
+// Index TOPページ　ログイン情報有効ならアプリへ 無ければLPへ
 func (c Auth) Index() revel.Result {
-	// loginチェック
-	_, err := c.Session.Get(serviceLoginSession);
-	if err != nil {
-		// セッション無ければLPへ
+	if !c.UserInfo.IsLogin {
 		return c.Redirect(routes.App.Index())
 	}
 	return c.Redirect(routes.Reminders.Index())
