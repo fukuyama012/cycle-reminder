@@ -24,8 +24,7 @@ func (c Reminders) Index() revel.Result {
 	if err != nil {
 		c.Log.Errorf("Index GetReminderListByUserID %#v", err)
 	}
-	userID := c.UserInfo.ID
-	return c.Render(userID, rlist)
+	return c.Render(rlist)
 }
 
 // UpdatePrepare リマインダー変更入力画面
@@ -41,8 +40,7 @@ func (c Reminders) UpdatePrepare(number int) revel.Result {
 		c.Log.Errorf("UpdatePrepare() GetReminderSettingByUserIDAndNumber %#v", err)
 		c.Redirect(routes.Reminders.Index())
 	}
-	userID := c.UserInfo.ID
-	return c.Render(userID, rSet)
+	return c.Render(rSet)
 }
 
 // Update リマインダー変更
@@ -76,8 +74,7 @@ func (c Reminders) CreatePrepare() revel.Result {
 		// 未ログイン TOP LPへ
 		return c.Redirect(routes.App.Index())
 	}
-	userID := c.UserInfo.ID
-	return c.Render(userID)
+	return c.Render()
 }
 
 // Create リマインド作成
