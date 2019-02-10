@@ -25,35 +25,6 @@ func (c App) Terms() revel.Result {
 	return c.Render()
 }
 
-// getLoginUser ログインユーザー情報取得
-func (c App) getLoginUser() (uint) {
-	// loginチェック
-	userIDSession, ok := c.getUserIDBySession()
-	if !ok {
-		// 有効なセッション情報無し
-		return uint(0)
-	}
-	user, err := services.CheckUserID(userIDSession)
-	if err != nil {
-		// ユーザー登録無し
-		return uint(0)
-	}
-	return user.ID
-}
-
-// getUserIDBySession セッションからユーザーID取り出し
-func (c App) getUserIDBySession() (uint, bool) {
-	userIDSesson, err := c.Session.Get(serviceLoginSession);
-	if err != nil {
-		return 0, false
-	}
-	val, ok := userIDSesson.(float64)
-	if !ok {
-		return 0, false
-	}
-	return uint(val), true
-}
-
 // getLoginInfo ログイン情報取得
 func (c *App) getLoginInfo() revel.Result {
 	c.UserInfo.IsLogin = false
@@ -72,6 +43,19 @@ func (c *App) getLoginInfo() revel.Result {
 	c.UserInfo.IsLogin = true
 	c.UserInfo.ID = user.ID
 	return nil
+}
+
+// getUserIDBySession セッションからユーザーID取り出し
+func (c App) getUserIDBySession() (uint, bool) {
+	userIDSesson, err := c.Session.Get(serviceLoginSession);
+	if err != nil {
+		return 0, false
+	}
+	val, ok := userIDSesson.(float64)
+	if !ok {
+		return 0, false
+	}
+	return uint(val), true
 }
 
 // setCommonToView　Viewに共通情報を設定

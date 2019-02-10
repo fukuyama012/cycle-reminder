@@ -15,43 +15,39 @@ type Reminders struct {
 
 // Index リマインド一覧表示
 func (c Reminders) Index() revel.Result {
-	// loginチェック
-	userID := c.getLoginUser()
-	if userID == uint(0) {
+	if !c.UserInfo.IsLogin {
 		// 未ログイン TOP LPへ
 		return c.Redirect(routes.App.Index())
 	}
 
-	rlist, err := services.GetReminderListByUserID(services.GetDB(), userID, 100, 0)
+	rlist, err := services.GetReminderListByUserID(services.GetDB(), c.UserInfo.ID, 100, 0)
 	if err != nil {
 		c.Log.Errorf("Index GetReminderListByUserID %#v", err)
 	}
+	userID := c.UserInfo.ID
 	return c.Render(userID, rlist)
 }
 
 // UpdatePrepare リマインダー変更入力画面
 func (c Reminders) UpdatePrepare(number int) revel.Result {
-	// loginチェック
-	userID := c.getLoginUser()
-	if userID == uint(0) {
+	if !c.UserInfo.IsLogin {
 		// 未ログイン TOP LPへ
 		return c.Redirect(routes.App.Index())
 	}
 
-	rSet, err := services.GetReminderSettingByUserIDAndNumber(services.GetDB(), userID, uint(number))
+	rSet, err := services.GetReminderSettingByUserIDAndNumber(services.GetDB(), c.UserInfo.ID, uint(number))
 	if err != nil {
 		// 変更対象存在しない
 		c.Log.Errorf("UpdatePrepare() GetReminderSettingByUserIDAndNumber %#v", err)
 		c.Redirect(routes.Reminders.Index())
 	}
+	userID := c.UserInfo.ID
 	return c.Render(userID, rSet)
 }
 
 // Update リマインダー変更
 func (c Reminders) Update(number int) revel.Result {
-	// loginチェック
-	userID := c.getLoginUser()
-	if userID == uint(0) {
+	if !c.UserInfo.IsLogin {
 		// 未ログイン TOP LPへ
 		return c.Redirect(routes.App.Index())
 	}
@@ -64,7 +60,7 @@ func (c Reminders) Update(number int) revel.Result {
 		return c.Render(result)
 	}
 	// 変更処理
-	_, err := services.UpdateReminderSettingByUserIDAndNumber(services.GetDB(), userID, uint(number), c.Params.Get("name"),
+	_, err := services.UpdateReminderSettingByUserIDAndNumber(services.GetDB(), c.UserInfo.ID, uint(number), c.Params.Get("name"),
 		c.Params.Get("notify_title"), c.Params.Get("notify_text"), uint(cycleDays))
 	if err != nil {
 		c.Log.Errorf("Update() UpdateReminderSettingByUserIDAndNumber %#v", err)
@@ -76,20 +72,17 @@ func (c Reminders) Update(number int) revel.Result {
 
 // CreatePrepare リマインド作成入力画面
 func (c Reminders) CreatePrepare() revel.Result {
-	// loginチェック
-	userID := c.getLoginUser()
-	if userID == uint(0) {
+	if !c.UserInfo.IsLogin {
 		// 未ログイン TOP LPへ
 		return c.Redirect(routes.App.Index())
 	}
+	userID := c.UserInfo.ID
 	return c.Render(userID)
 }
 
 // Create リマインド作成
 func (c Reminders) Create() revel.Result {
-	// loginチェック
-	userID := c.getLoginUser()
-	if userID == uint(0) {
+	if !c.UserInfo.IsLogin {
 		// 未ログイン TOP LPへ
 		return c.Redirect(routes.App.Index())
 	}
@@ -102,7 +95,7 @@ func (c Reminders) Create() revel.Result {
 		return c.Render(result)
 	}
 	// 登録処理
-	if err := services.CreateReminderSettingWithRelationInTransact(services.GetDB(), userID, c.Params.Get("name"),
+	if err := services.CreateReminderSettingWithRelationInTransact(services.GetDB(), c.UserInfo.ID, c.Params.Get("name"),
 		c.Params.Get("notify_title"), c.Params.Get("notify_text"), uint(cycleDays), time.Now());
 	err != nil {
 		c.Log.Errorf("CreateReminderSettingWithRelationInTransact %#v", err)
@@ -114,16 +107,14 @@ func (c Reminders) Create() revel.Result {
 
 // Delete リマインダー削除
 func (c Reminders) Delete(number int) revel.Result {
-	// loginチェック
-	userID := c.getLoginUser()
-	if userID == uint(0) {
+	if !c.UserInfo.IsLogin {
 		// 未ログイン TOP LPへ
 		return c.Redirect(routes.App.Index())
 	}
 
 	// TODO 後ほど整理する。。
 	result := "削除失敗！"
-	if err := services.DeleteReminderSettingByUserIDAndNumber(services.GetDB(), userID, uint(number)); err != nil {
+	if err := services.DeleteReminderSettingByUserIDAndNumber(services.GetDB(), c.UserInfo.ID, uint(number)); err != nil {
 		c.Log.Errorf("Delete() DeleteReminderSettingByUserIDAndNumber %#v", err)
 		return c.Render(result)
 	}
