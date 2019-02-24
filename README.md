@@ -1,5 +1,6 @@
-# cycle-reminder
-Cycle-reminder is web service.
+# Cycle Reminder
+
+[![CircleCI](https://circleci.com/gh/fukuyama012/cycle-reminder/tree/master.svg?style=svg&circle-token=20068b75de13cf626631e87ed6a01dfa8a5584f6)](https://circleci.com/gh/fukuyama012/cycle-reminder/tree/master)
 
 ### Service Site
 https://cycle-reminder.com/
