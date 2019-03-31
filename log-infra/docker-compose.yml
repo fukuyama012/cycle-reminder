@@ -6,7 +6,7 @@ services:
     links:
       - "elasticsearch"
     ports:
-      - "22422:22422"
+      - "24224:24224"
 
   elasticsearch:
     image: elasticsearch:6.6.2

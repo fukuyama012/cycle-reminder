@@ -4,6 +4,10 @@ services:
     command: revel run -a github.com/fukuyama012/cycle-reminder/service/web
     volumes:
       - ./web/:/go/src/github.com/fukuyama012/cycle-reminder/service/web/
+    logging:
+      driver: fluentd
+      options:
+        fluentd-async-connect: "false"
 
   db:
     ports:

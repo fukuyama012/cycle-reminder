@@ -13,9 +13,15 @@ services:
       - db
     restart: always
     logging:
+      driver: fluentd
       options:
-        max-size: 5m
-        max-file: "10"
+        fluentd-address: localhost:24224
+        tag: docker.{{.Name}}
+        fluentd-async-connect: "true" # サービス起動を担保する
+        fluentd-buffer-limit: "32mb"
+        fluentd-retry-wait: "1000ms"
+        fluentd-max-retries: "30"
+        
 
   db:
     image: fukuyama012/mysql5.7
