@@ -11,8 +11,8 @@ services:
   elasticsearch:
     image: elasticsearch:6.6.2
     container_name: elasticsearch
-    expose:
-      - 9200
+    ports:
+      - "9200:9200"
     volumes:
       - ./es_data/:/usr/share/elasticsearch/data/
     environment:
