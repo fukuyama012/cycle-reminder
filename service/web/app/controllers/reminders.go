@@ -54,7 +54,7 @@ func (c Reminders) Update(number int) revel.Result {
 	result := "変更失敗！"
 	cycleDays, errCast := strconv.Atoi(c.Params.Get("cycle_days"))
 	if errCast != nil {
-		c.Log.Errorf("cant cask cycleDays %#v", errCast)
+		c.Log.Errorf("cant cast cycleDays %#v", errCast)
 		return c.Render(result)
 	}
 	// 変更処理
@@ -88,7 +88,7 @@ func (c Reminders) Create() revel.Result {
 	result := "登録失敗！"
 	cycleDays, errCast := strconv.Atoi(c.Params.Get("cycle_days"))
 	if errCast != nil {
-		c.Log.Errorf("cant cask cycle_days %#v", errCast)
+		c.Log.Errorf("cant cast cycle_days %#v", errCast)
 		return c.Render(result)
 	}
 	// 登録処理
