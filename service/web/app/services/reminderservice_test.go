@@ -164,6 +164,7 @@ func TestGetReminderListByUser(t *testing.T) {
 		assert.Equal(t, tt.Name, reminderList[0].Name)
 		assert.Equal(t, tt.CycleDays, reminderList[0].CycleDays)
 		assert.Equal(t, tt.NotifyDate, reminderList[0].NotifyDate)
+		assert.NotZero(t, reminderList[0].ScheduleID)
 	}
 }
 
