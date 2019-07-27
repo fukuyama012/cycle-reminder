@@ -39,14 +39,20 @@ func (c Schedules) Update(id int) revel.Result {
 		c.Redirect(routes.Reminders.Index())
 	}
 
-	result := "変更失敗！"
 	notify, err := time.Parse("2006-01-02 15:04:05", c.Params.Get("notify_date") + " 00:00:00")
 	if err != nil {
 		c.Log.Errorf("cant cast notify date %#v", err)
+		result := "正しい日付形式で入力してください"
+		return c.Render(result)
+	}
+	now := time.Now()
+	if notify.Before(now) {
+		result := "本日より後の日付を入力してください"
 		return c.Render(result)
 	}
 	if err := rSch.Updates(services.GetDB(), notify); err != nil {
 		c.Log.Errorf("Update err %#v", err)
+		result := "変更失敗！"
 		return c.Render(result)
 	}
 
