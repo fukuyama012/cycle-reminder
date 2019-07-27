@@ -5,9 +5,11 @@ import (
 	"github.com/jinzhu/gorm"
 	"log"
 	"os"
+	"sync"
 	"time"
 )
 
+var mutex = sync.RWMutex{}
 var DB *gorm.DB
 
 func InitDB()  {
@@ -16,6 +18,9 @@ func InitDB()  {
 }
 
 func connectDB()  {
+	mutex.Lock()
+	defer mutex.Unlock()
+	
 	c := mysql.Config{
 		DBName:               os.Getenv("MYSQL_DATABASE"),
 		User:                 os.Getenv("MYSQL_USER"),
