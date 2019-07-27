@@ -69,6 +69,17 @@ func GetReminderSchedulesReachedNotifyDate(db *gorm.DB, targetDate time.Time) ([
 	return rSchedules, nil
 }
 
+// GetByID PKで取得
+func (rSch *ReminderSchedule) GetByID(db *gorm.DB, id uint) error {
+	if err := db.Where("id = ?", id).First(&rSch).Error; err != nil {
+		if gorm.IsRecordNotFoundError(err){
+			return gorm.ErrRecordNotFound
+		}
+		return err
+	}
+	return nil
+}
+
 // GetByReminderSetting リマインド設定（ユニークキー）で検索
 func (rSch *ReminderSchedule) GetByReminderSetting(db *gorm.DB, rSet ReminderSetting) error {
 	if err := db.Where("reminder_setting_id = ?", rSet.ID).First(&rSch).Error; err != nil {

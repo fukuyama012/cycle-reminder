@@ -86,6 +86,17 @@ func (rSet *ReminderSetting) GetById(db *gorm.DB, id uint) error {
 	return nil
 }
 
+// GetByIDAndUserID PKとUserIDで取得
+func (rSet *ReminderSetting) GetByIDAndUserID(db *gorm.DB, id, userID uint) error {
+	if err := db.Where("id = ? AND user_id = ?", id, userID).First(&rSet).Error; err != nil {
+		if gorm.IsRecordNotFoundError(err){
+			return gorm.ErrRecordNotFound
+		}
+		return err
+	}
+	return nil
+}
+
 // GetByUserIDAndNumber UserIDとNumberで検索
 func (rSet *ReminderSetting) GetByUserIDAndNumber(db *gorm.DB, userID uint, number uint) error {
 	if err := db.Where("user_id = ? AND number = ?", userID, number).First(&rSet).Error; err != nil {

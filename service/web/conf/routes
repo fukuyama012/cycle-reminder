@@ -22,8 +22,8 @@ GET     /reminders/:number                      Reminders.UpdatePrepare
 POST    /reminders/:number                      Reminders.Update
 POST    /reminders/delete/:number               Reminders.Delete
 
-GET     /schedules/:number                      Schedules.UpdatePrepare
-POST    /schedules/:number                      Schedules.Update
+GET     /schedules/:id                          Schedules.UpdatePrepare
+POST    /schedules/:id                          Schedules.Update
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

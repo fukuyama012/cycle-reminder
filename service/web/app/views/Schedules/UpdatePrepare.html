@@ -1,0 +1,30 @@
+{{set . "title" "次回通知日変更"}}
+{{template "header.html" .}}
+
+
+<div class="page-header">
+    <h3>次回通知日変更</h3>
+</div>
+
+<form action="/schedules/{{.rSch.ID}}" method="post">
+    <div class="form-group">
+        <label for="name">リマインダー名</label>
+        {{.rSet.Name}}
+    </div>
+    <div class="form-inline">
+        <label for="cycle_days">次回通知日</label> <span class="text-danger">*</span>
+        <input type="text" class="form-control" name="notify_date" id="notify_date" value="{{date .rSch.NotifyDate}}">
+    </div><br>
+    <button type="submit" class="btn btn-info">変更 ≫</button>
+</form>
+<br><br>
+
+<div class="container">
+  <div class="row">
+    <div class="span6">
+      {{template "flash.html" .}}
+    </div>
+  </div>
+</div>
+
+{{template "footer.html" .}}
