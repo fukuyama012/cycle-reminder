@@ -86,6 +86,19 @@ func GetReminderSettingByUserIDAndNumber(db *gorm.DB, UserID, number uint) (*mod
 	return &rSet, nil
 }
 
+// GetSettingAndScheduleByScheduleIDAndUserID 
+func GetSettingAndScheduleByScheduleIDAndUserID(db *gorm.DB, scheduleID, userID uint) (*models.ReminderSetting, *models.ReminderSchedule, error) {
+	rSch := &models.ReminderSchedule{}
+	if err := rSch.GetByID(db, scheduleID); err != nil {
+		return nil, nil, err
+	}
+	rSet := &models.ReminderSetting{}
+	if err := rSet.GetByIDAndUserID(db, rSch.ReminderSettingID, userID); err != nil {
+		return nil, nil, err
+	}
+	return rSet, rSch, nil
+}
+
 // UpdateReminderSettingByUserIDAndNumber リマインド設定変更
 func UpdateReminderSettingByUserIDAndNumber(db *gorm.DB, userID, number uint, name, notifyTitle, notifyText string, cycleDays uint) (*models.ReminderSetting, error)  {
 	data, err := models.TransactAndReceiveData(db, func(tx *gorm.DB) (interface{}, error) {
