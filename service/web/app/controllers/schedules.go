@@ -39,7 +39,8 @@ func (c Schedules) Update(id int) revel.Result {
 		c.Redirect(routes.Reminders.Index())
 	}
 
-	notify, err := time.Parse("2006-01-02 15:04:05", c.Params.Get("notify_date") + " 00:00:00")
+	jst, _ := time.LoadLocation("Asia/Tokyo")
+	notify, err := time.ParseInLocation("2006-01-02 15:04:05", c.Params.Get("notify_date") + " 00:00:00", jst)
 	if err != nil {
 		c.Log.Errorf("cant cast notify date %#v", err)
 		result := "正しい日付形式で入力してください"
