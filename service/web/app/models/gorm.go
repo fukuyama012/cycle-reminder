@@ -12,6 +12,15 @@ import (
 var mutex = sync.RWMutex{}
 var DB *gorm.DB
 
+// GetDB DB接続取得
+func GetDB() *gorm.DB {
+	if DB != nil {
+		return DB
+	}
+	InitDB()
+	return DB
+}
+
 func InitDB()  {
 	connectDB()
 	migrate()

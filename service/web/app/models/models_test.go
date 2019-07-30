@@ -8,10 +8,6 @@ import (
 	"testing"
 )
 
-var (
-	fixtures *testfixtures.Context
-)
-
 func TestMain(m *testing.M) {
 	setUpBefore()
 	ret := m.Run()
@@ -20,19 +16,13 @@ func TestMain(m *testing.M) {
 }
 
 func setUpBefore()  {
-	models.InitDB()
-	prepareFixtures()
-}
-
-func prepareFixtures()  {
-	fixtures_, err := testfixtures.NewFolder(models.DB.DB(), &testfixtures.MySQL{}, "../../tests/fixtures/models")
-	if err != nil {
-		log.Fatal(err)
-	}
-	fixtures = fixtures_
 }
 
 func prepareTestDB() {
+	fixtures, err := testfixtures.NewFolder(models.GetDB().DB(), &testfixtures.MySQL{}, "../../tests/fixtures/models")
+	if err != nil {
+		log.Fatal(err)
+	}
 	if err := fixtures.Load(); err != nil {
 		log.Fatal(err)
 	}
