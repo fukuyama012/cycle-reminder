@@ -13,7 +13,6 @@ var Logger = log.New(os.Stdout, "", log.LstdFlags)
 
 // コンテナ外部のcronからファイル指定実行する
 func main()  {
-	services.InitDB()
 	doNotifyReminder()
 }
 

@@ -19,6 +19,7 @@ type ReminderDetail struct {
 	NotifyText string
 	CycleDays uint
 	NotifyDate time.Time
+	ScheduleID uint
 }
 
 // CreateReminderSettingWithRelationInTransact リマインド設定と紐付くリマインド予定をトランザクション作成
@@ -64,7 +65,8 @@ func GetReminderListByUserID(db *gorm.DB, userID uint, limit, offset int) ([]Rem
 		return nil, errors.New("not exists userID, GetReminderListByUserID")
 	}
 	var result []ReminderDetail
-	if err := db.Table("reminder_settings").Select("reminder_settings.*, reminder_schedules.notify_date").
+	if err := db.Table("reminder_settings").
+		Select("reminder_settings.*, reminder_schedules.notify_date, reminder_schedules.id as `schedule_id`").
 		Joins("INNER JOIN reminder_schedules ON reminder_settings.id = reminder_schedules.reminder_setting_id").
 		Where("reminder_settings.user_id = ?", userID).
 		Order("reminder_settings.id", true).
@@ -82,6 +84,19 @@ func GetReminderSettingByUserIDAndNumber(db *gorm.DB, UserID, number uint) (*mod
 		return nil, err
 	}
 	return &rSet, nil
+}
+
+// GetSettingAndScheduleByScheduleIDAndUserID 
+func GetSettingAndScheduleByScheduleIDAndUserID(db *gorm.DB, scheduleID, userID uint) (*models.ReminderSetting, *models.ReminderSchedule, error) {
+	rSch := &models.ReminderSchedule{}
+	if err := rSch.GetByID(db, scheduleID); err != nil {
+		return nil, nil, err
+	}
+	rSet := &models.ReminderSetting{}
+	if err := rSet.GetByIDAndUserID(db, rSch.ReminderSettingID, userID); err != nil {
+		return nil, nil, err
+	}
+	return rSet, rSch, nil
 }
 
 // UpdateReminderSettingByUserIDAndNumber リマインド設定変更

@@ -13,8 +13,8 @@
         <td>通知メールタイトル</td>
         <td>通知メール本文</td>
         <td>通知間隔日数</td>
-        <td>次回通知日付</td>
-        <td></td>
+        <td>次回通知日</td>
+        <td>設定</td>
     </tr>
     </thead>
     {{ range .rlist }}
@@ -23,7 +23,11 @@
         <td>{{ .NotifyTitle }}</td>
         <td>{{ .NotifyText }}</td>
         <td>{{ .CycleDays }}</td>
-        <td>{{date .NotifyDate }}</td>
+        <td>{{date .NotifyDate }}&nbsp;
+                <a href="/schedules/{{.ScheduleID}}" >
+                    <button class="btn btn-info">通知日変更</button>
+                </a> 
+        </td>
         <td>
             <form action="/reminders/{{.Number}}" method="get">
                 <button class="btn btn-info">変更</button>

@@ -16,11 +16,14 @@ GET     /top                                    App.Index
 GET     /terms                                  App.Terms
 
 GET     /reminders                              Reminders.Index
-GET     /reminders/:number                      Reminders.UpdatePrepare
-POST    /reminders/:number                      Reminders.Update
 GET     /create                                 Reminders.CreatePrepare
 POST    /create                                 Reminders.Create
+GET     /reminders/:number                      Reminders.UpdatePrepare
+POST    /reminders/:number                      Reminders.Update
 POST    /reminders/delete/:number               Reminders.Delete
+
+GET     /schedules/:id                          Schedules.UpdatePrepare
+POST    /schedules/:id                          Schedules.Update
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

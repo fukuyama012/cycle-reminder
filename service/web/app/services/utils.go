@@ -18,12 +18,5 @@ func RandString(n int) string {
 
 // GetDB DB接続取得
 func GetDB() *gorm.DB {
-	return models.DB
-}
-
-// InitDB DB初期化
-func InitDB()  {
-	if GetDB() == nil {
-		models.InitDB()
-	}
+	return models.GetDB()
 }
