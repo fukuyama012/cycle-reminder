@@ -54,6 +54,7 @@ jobs:
           dockerize -wait tcp://localhost:3306 -timeout 1m
 
           export MYSQL_USER=root
+          export MYSQL_PASSWORD=
           export MYSQL_DATABASE=circle_test
           export MYSQL_PORT=3306
           export MYSQL_ADDRESS=127.0.0.1
