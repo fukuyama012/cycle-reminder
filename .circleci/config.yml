@@ -7,8 +7,9 @@ jobs:
         command: [--character-set-server=utf8mb4, --collation-server=utf8mb4_general_ci, --default-storage-engine=innodb]
     working_directory: /go/src/github.com/fukuyama012/cycle-reminder
     steps:
-      - setup_remote_docker
       - checkout
+      - setup_remote_docker:
+          version: 18.05.0-ce
 
       - restore_cache:
           keys:
@@ -79,8 +80,8 @@ jobs:
       - run:
           name: gcloud auth
           command: |
-            echo $GCLOUD_SERVICE_KEY | base64 --decode > ${HOME}/gcloud-service-key.json
-            gcloud auth activate-service-account --key-file ${HOME}/gcloud-service-key.json
+            echo $GCLOUD_SERVICE_KEY | base64 --decode > gcloud-service-key.json
+            gcloud auth activate-service-account --key-file gcloud-service-key.json
             gcloud --quiet auth configure-docker
               
       - run: |
