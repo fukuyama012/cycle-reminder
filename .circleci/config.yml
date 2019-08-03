@@ -58,12 +58,11 @@ jobs:
           export MYSQL_PORT=3306
           export MYSQL_ADDRESS=127.0.0.1
           export SENDGRID_API_KEY=
-          /home/circleci/go/bin/revel run -a github.com/fukuyama012/cycle-reminder/service/web
           
           mkdir -p /tmp/test-results/go
           echo "mode: set" >> /tmp/coverage.out
           cd service/web
-          for PKG in $(go list ./...|grep -v vendor); do
+          for PKG in $(go list ./...|grep -v vendor | grep -v controllers); do
             go test -v -coverprofile=tmp.txt $PKG -p 1 | tee -a /tmp/test-results/go/test.out
             cat tmp.txt | tail -n +2 >> /tmp/coverage.out
             rm -f tmp.txt
