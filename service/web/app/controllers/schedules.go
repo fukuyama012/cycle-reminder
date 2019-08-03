@@ -12,6 +12,16 @@ type Schedules struct {
 	App
 }
 
+// Index 画面無し　リマインダ一覧へ戻る
+func (c Schedules) Index() revel.Result {
+	if !c.UserInfo.IsLogin {
+		// 未ログイン TOP LPへ
+		return c.Redirect(routes.App.Index())
+	}
+
+	return c.Redirect(routes.Auth.Index())
+}
+
 // UpdatePrepare リマインダー変更入力画面
 func (c Schedules) UpdatePrepare(id int) revel.Result {
 	if !c.UserInfo.IsLogin {

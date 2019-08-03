@@ -22,6 +22,7 @@ GET     /reminders/:number                      Reminders.UpdatePrepare
 POST    /reminders/:number                      Reminders.Update
 POST    /reminders/delete/:number               Reminders.Delete
 
+GET     /schedules                              Schedules.Index
 GET     /schedules/:id                          Schedules.UpdatePrepare
 POST    /schedules/:id                          Schedules.Update
 
