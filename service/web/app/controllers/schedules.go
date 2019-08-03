@@ -32,7 +32,7 @@ func (c Schedules) UpdatePrepare(id int) revel.Result {
 	rSet, rSch, err := services.GetSettingAndScheduleByScheduleIDAndUserID(services.GetDB(), uint(id), c.UserInfo.ID)
 	if err != nil {
 		c.Log.Errorf("not found schedule %#v", err)
-		c.Redirect(routes.Reminders.Index())
+		return c.Redirect(routes.Reminders.Index())
 	}
 	return c.Render(rSet, rSch)
 }
@@ -46,7 +46,7 @@ func (c Schedules) Update(id int) revel.Result {
 	_, rSch, err := services.GetSettingAndScheduleByScheduleIDAndUserID(services.GetDB(), uint(id), c.UserInfo.ID)
 	if err != nil {
 		c.Log.Errorf("not found schedule %#v", err)
-		c.Redirect(routes.Reminders.Index())
+		return c.Redirect(routes.Reminders.Index())
 	}
 
 	jst, _ := time.LoadLocation("Asia/Tokyo")
