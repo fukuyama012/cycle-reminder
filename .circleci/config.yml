@@ -76,10 +76,15 @@ jobs:
       - store_artifacts:
           path: /tmp/coverage.html
           
+      - run:
+          name: gcloud auth
+            command: |
+              echo $GCLOUD_SERVICE_KEY | base64 --decode > ${HOME}/gcloud-service-key.json
+              gcloud auth activate-service-account --key-file ${HOME}/gcloud-service-key.json
+              gcloud --quiet auth configure-docker
+              
       - run: |
-          echo $GCLOUD_SERVICE_KEY | docker login --password-stdin -u _json_key https://asia.gcr.io
-          
-      - run: |
+          cd service/web
           export IMAGE_TAG=$(echo $CIRCLE_BRANCH | sed -e 's/\//-/g')
           docker build -t asia.gcr.io/$GCP_PROJECT_NAME/cycle-reminder:${IMAGE_TAG} .
           docker push asia.gcr.io/$GCP_PROJECT_NAME/cycle-reminder:${IMAGE_TAG}
