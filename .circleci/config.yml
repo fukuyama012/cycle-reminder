@@ -31,22 +31,21 @@ jobs:
 
       - restore_cache:
           keys:
-            - vendor-{{.Environment.CACHE_VERSION}}-{{ checksum "Gopkg.lock" }}
-          working_directory: service/web
+            - vendor-{{.Environment.CACHE_VERSION}}-{{ checksum "service/web/Gopkg.lock" }}
 
       - run:
           command: /home/circleci/go/bin/dep ensure
           working_directory: service/web
           
       - save_cache:
-          key: vendor-{{.Environment.CACHE_VERSION}}-{{ checksum "Gopkg.lock" }}
+          key: vendor-{{.Environment.CACHE_VERSION}}-{{ checksum "service/web/Gopkg.lock" }}
           paths:
             - service/web/vendor
 
       - run:
           name: golint bash exec
-          command: golint.sh
-          working_directory: service/web
+          command: bash golint.sh
+          working_directory: service
           
       - run: |
           dockerize -wait tcp://localhost:3306 -timeout 1m
