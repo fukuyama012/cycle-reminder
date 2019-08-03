@@ -8,15 +8,15 @@
 
 <form action="/reminders/{{.rSet.Number}}" method="post">
     <div class="form-group">
-        <label for="name">リマインダー名</label> <span class="text-danger">*</span>
+        <label for="name">リマインダー名称</label> <span class="text-danger">*</span>
         <input type="text" class="form-control" id="name" name="name" size="10" value="{{.rSet.Name}}">
     </div>
     <div class="form-group">
-        <label for="notify_title">通知メールタイトル</label>
+        <label for="notify_title">通知タイトル</label>
         <input type="text" class="form-control" name="notify_title" id="notify_title" value="{{.rSet.NotifyTitle}}">
     </div>
     <div class="form-group">
-        <label for="notify_text">通知メール本文 </label> <span class="text-danger">*</span>
+        <label for="notify_text">通知本文 </label> <span class="text-danger">*</span>
         <textarea class="form-control" rows="6" id="notify_text" name="notify_text">{{.rSet.NotifyText}}</textarea>
     </div>
     <div class="form-inline">

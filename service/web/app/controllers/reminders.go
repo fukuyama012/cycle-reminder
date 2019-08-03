@@ -38,7 +38,7 @@ func (c Reminders) UpdatePrepare(number int) revel.Result {
 	if err != nil {
 		// 変更対象存在しない
 		c.Log.Errorf("UpdatePrepare() GetReminderSettingByUserIDAndNumber %#v", err)
-		c.Redirect(routes.Reminders.Index())
+		return c.Redirect(routes.Reminders.Index())
 	}
 	return c.Render(rSet)
 }

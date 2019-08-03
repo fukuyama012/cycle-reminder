@@ -12,6 +12,16 @@ type Schedules struct {
 	App
 }
 
+// Index 画面無し　リマインダ一覧へ戻る
+func (c Schedules) Index() revel.Result {
+	if !c.UserInfo.IsLogin {
+		// 未ログイン TOP LPへ
+		return c.Redirect(routes.App.Index())
+	}
+
+	return c.Redirect(routes.Auth.Index())
+}
+
 // UpdatePrepare リマインダー変更入力画面
 func (c Schedules) UpdatePrepare(id int) revel.Result {
 	if !c.UserInfo.IsLogin {
@@ -22,7 +32,7 @@ func (c Schedules) UpdatePrepare(id int) revel.Result {
 	rSet, rSch, err := services.GetSettingAndScheduleByScheduleIDAndUserID(services.GetDB(), uint(id), c.UserInfo.ID)
 	if err != nil {
 		c.Log.Errorf("not found schedule %#v", err)
-		c.Redirect(routes.Reminders.Index())
+		return c.Redirect(routes.Reminders.Index())
 	}
 	return c.Render(rSet, rSch)
 }
@@ -36,7 +46,7 @@ func (c Schedules) Update(id int) revel.Result {
 	_, rSch, err := services.GetSettingAndScheduleByScheduleIDAndUserID(services.GetDB(), uint(id), c.UserInfo.ID)
 	if err != nil {
 		c.Log.Errorf("not found schedule %#v", err)
-		c.Redirect(routes.Reminders.Index())
+		return c.Redirect(routes.Reminders.Index())
 	}
 
 	jst, _ := time.LoadLocation("Asia/Tokyo")
