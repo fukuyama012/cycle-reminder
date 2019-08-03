@@ -1,65 +1,75 @@
 version: 2
 jobs:
   build:
-    machine:
-      image: circleci/classic:edge
+    docker:
+      - image: circleci/golang:1.11.12
+      - image: circleci/mysql:5.7
+        command: [--character-set-server=utf8mb4, --collation-server=utf8mb4_general_ci, --default-storage-engine=innodb]
+    working_directory: /go/src/github.com/fukuyama012/cycle-reminder/service/web
     steps:
-    - checkout
-    - run:
-        name: docker build
-        command: docker build -t ${DOCKER_HUB_USER}/${DOCKER_HUB_IMAGE} .
-        working_directory: service/web
-    - run:
-        name: docker login
-        command: docker login -u ${DOCKER_HUB_USER} -p "${DOCKER_HUB_PASSWORD}"
-    - run:
-        name: docker push
-        command: docker push ${DOCKER_HUB_USER}/${DOCKER_HUB_IMAGE}:latest
-        working_directory: service/web
-
-  test:
-    machine:
-      image: circleci/classic:edge
-    steps:
+      - setup_remote_docker
       - checkout
-      - run:
-          name: make network
-          command: bash make-network.sh
-      - run:
-          name: nginx up
-          command: docker-compose -f docker-compose.dev.yml up -d
-          working_directory: nginx
-      - run:
-          name: service up
-          command: docker-compose -f docker-compose.test.yml up -d
-          working_directory: service
-      - run:
-          name: Install JUnit
-          command: go get github.com/jstemmer/go-junit-report
-      - run:
-          name: Wait until the db container fully set up
-          command: |
-            docker run --network shared \
-              jwilder/dockerize -wait tcp://db:3306 -timeout 90s -wait-retry-interval 3s
-      - run:
-          name: golint bash script cp
-          command: docker cp golint.sh web:/go/src/github.com/fukuyama012/cycle-reminder/service/web/
-          working_directory: service
+
+      - restore_cache:
+          keys:
+            - golang-{{.Environment.CACHE_VERSION}}-1.11
+
+      - run: |
+          export GOPATH=/home/circleci/go
+          mkdir -p $GOPATH
+          if [ ! -e $GOPATH/bin/go-junit-report ]; then
+            go get github.com/jstemmer/go-junit-report
+          fi
+          if [ ! -e $GOPATH/bin/dep ]; then
+            go get github.com/golang/dep/cmd/dep
+          fi
+
+      - save_cache:
+          key: golang-{{.Environment.CACHE_VERSION}}-1.11
+          paths:
+            - /home/circleci/go
+
+      - restore_cache:
+          keys:
+            - vendor-{{.Environment.CACHE_VERSION}}-{{ checksum "Gopkg.lock" }}
+
+      - run: |
+          /home/circleci/go/bin/dep ensure
+          
+      - save_cache:
+          key: vendor-{{.Environment.CACHE_VERSION}}-{{ checksum "Gopkg.lock" }}
+          paths:
+            - vendor
+
       - run:
           name: golint bash exec
-          command: docker-compose -f docker-compose.test.yml exec web bash golint.sh
-          working_directory: service
-      - run:
-          name: go test
-          command: docker-compose -f docker-compose.test.yml exec -T web go test ./... -v | tee go-test.out
-          working_directory: service
-      - run:
-          name: generate test report
-          command: go-junit-report < go-test.out > report.xml
-          working_directory: service
+          command: /go/src/github.com/fukuyama012/cycle-reminder/service/golint.sh
+          
+      - run: |
+          dockerize -wait tcp://localhost:3306 -timeout 1m
+
+          export MYSQL_USER=root
+          export MYSQL_DATABASE=circle_test
+          export MYSQL_PORT=3306
+          export MYSQL_ADDRESS=127.0.0.1
+          export SENDGRID_API_KEY=
+          
+          mkdir -p /tmp/test-results/go
+          echo "mode: set" >> /tmp/coverage.out
+          for PKG in $(go list ./...|grep -v vendor); do
+            go test -v -coverprofile=tmp.txt $PKG -p 1 | tee -a /tmp/test-results/go/test.out
+            cat tmp.txt | tail -n +2 >> /tmp/coverage.out
+            rm -f tmp.txt
+          done
+          go tool cover -html=/tmp/coverage.out  -o /tmp/coverage.html
+          /home/circleci/go/bin/go-junit-report < /tmp/test-results/go/test.out > /tmp/test-results/go/test-report.xml
+          
+      - store_test_results:
+          path: /tmp/test-results
+
       - store_artifacts:
-          path: service/report.xml
-          destination: report.xml
+          path: /tmp/coverage.html
+
 
   deploy-prod:
     machine:
@@ -91,12 +101,9 @@ workflows:
   build_and_deploy:
     jobs:
     - build
-    - test:
-        requires:
-        - build
     - deploy-prod:
         requires:
-        - test
+        - build
         filters:
           branches:
             only: master

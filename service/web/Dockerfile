@@ -1,4 +1,4 @@
-FROM golang:1.11.2
+FROM golang:1.11-alpine
  
 # setup revel
 RUN go get -u github.com/revel/revel
