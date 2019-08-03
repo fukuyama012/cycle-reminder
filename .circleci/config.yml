@@ -50,7 +50,7 @@ jobs:
           working_directory: service
           
       - run: |
-          revel run -a github.com/fukuyama012/cycle-reminder/service/web prod
+          /home/circleci/go/bin/revel run -a github.com/fukuyama012/cycle-reminder/service/web prod
           dockerize -wait tcp://localhost:3306 -timeout 1m
 
           export MYSQL_USER=root
