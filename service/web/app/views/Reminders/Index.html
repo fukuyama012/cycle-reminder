@@ -9,9 +9,8 @@
 <tbody>
     <thead>
     <tr>
-        <td>リマインダー名</td>
-        <td>通知メールタイトル</td>
-        <td>通知メール本文</td>
+        <td>名称</td>
+        <td>通知タイトル</td>
         <td>通知間隔日数</td>
         <td>次回通知日</td>
         <td>設定</td>
@@ -21,9 +20,8 @@
     <tr>
         <td>{{ .Name }}</td>
         <td>{{ .NotifyTitle }}</td>
-        <td>{{ .NotifyText }}</td>
         <td>{{ .CycleDays }}</td>
-        <td>{{date .NotifyDate }}&nbsp;
+        <td>{{date .NotifyDate }}
                 <a href="/schedules/{{.ScheduleID}}" >
                     <button class="btn btn-info">通知日変更</button>
                 </a> 
