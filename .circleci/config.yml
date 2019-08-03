@@ -5,7 +5,7 @@ jobs:
       - image: circleci/golang:1.11.12
       - image: circleci/mysql:5.7
         command: [--character-set-server=utf8mb4, --collation-server=utf8mb4_general_ci, --default-storage-engine=innodb]
-    working_directory: /go/src/github.com/fukuyama012/cycle-reminder/service/web
+    working_directory: /go/src/github.com/fukuyama012/cycle-reminder
     steps:
       - setup_remote_docker
       - checkout
@@ -32,18 +32,21 @@ jobs:
       - restore_cache:
           keys:
             - vendor-{{.Environment.CACHE_VERSION}}-{{ checksum "Gopkg.lock" }}
+          working_directory: service/web
 
-      - run: |
-          /home/circleci/go/bin/dep ensure
+      - run:
+          command: /home/circleci/go/bin/dep ensure
+          working_directory: service/web
           
       - save_cache:
           key: vendor-{{.Environment.CACHE_VERSION}}-{{ checksum "Gopkg.lock" }}
           paths:
-            - vendor
+            - service/web/vendor
 
       - run:
           name: golint bash exec
-          command: /go/src/github.com/fukuyama012/cycle-reminder/service/golint.sh
+          command: golint.sh
+          working_directory: service/web
           
       - run: |
           dockerize -wait tcp://localhost:3306 -timeout 1m
@@ -56,6 +59,7 @@ jobs:
           
           mkdir -p /tmp/test-results/go
           echo "mode: set" >> /tmp/coverage.out
+          cd service/web
           for PKG in $(go list ./...|grep -v vendor); do
             go test -v -coverprofile=tmp.txt $PKG -p 1 | tee -a /tmp/test-results/go/test.out
             cat tmp.txt | tail -n +2 >> /tmp/coverage.out
