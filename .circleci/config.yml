@@ -75,6 +75,14 @@ jobs:
 
       - store_artifacts:
           path: /tmp/coverage.html
+          
+      - run: |
+          echo $GCLOUD_SERVICE_KEY | docker login --password-stdin -u _json_key https://asia.gcr.io
+          
+      - run: |
+          export IMAGE_TAG=$(echo $CIRCLE_BRANCH | sed -e 's/\//-/g')
+          docker build -t asia.gcr.io/$GCP_PROJECT_NAME/cycle-reminder:${IMAGE_TAG} .
+          docker push asia.gcr.io/$GCP_PROJECT_NAME/cycle-reminder:${IMAGE_TAG}
 
 
   deploy-prod:

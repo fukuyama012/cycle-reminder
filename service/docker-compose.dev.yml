@@ -1,7 +1,8 @@
 version: '3.3'
 services:
   web:
-    command: revel run -a github.com/fukuyama012/cycle-reminder/service/web
+    build:
+      context: .
     volumes:
       - ./web/:/go/src/github.com/fukuyama012/cycle-reminder/service/web/
 
